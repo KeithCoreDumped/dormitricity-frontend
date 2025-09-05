@@ -10,11 +10,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { CircleUser, Menu, Settings } from "lucide-react";
+import { CircleUser, Menu } from "lucide-react";
 import Link from "next/link";
 import { removeToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { navLinks } from "./Sidebar";
+import Image from "next/image";
 
 export function Topbar() {
   const router = useRouter();
@@ -39,7 +40,12 @@ export function Topbar() {
               href="#"
               className="flex items-center gap-2 text-lg font-semibold"
             >
-              <Settings className="h-6 w-6" />
+              <Image
+                src="/dormitricity-logo.svg"
+                alt="Dormitricity Logo"
+                width={24}
+                height={24}
+              />
               <span className="sr-only">Dormitricity</span>
             </Link>
             {navLinks.map((link) => (
