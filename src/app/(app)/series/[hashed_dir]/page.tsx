@@ -39,7 +39,7 @@ export default function SeriesPage() {
         }
 
         const data = await apiClient.get(
-          `/series/${hashed_dir}?since=${since.toISOString()}`
+          `/series/${hashed_dir}?since=${since.getTime() / 1000}&limit=5000`
         );
         setPoints(data.points);
       } catch (err) {
