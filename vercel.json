@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://dormitricity-worker.kcd049.workers.dev/:path*"
+    }
+  ]
+}

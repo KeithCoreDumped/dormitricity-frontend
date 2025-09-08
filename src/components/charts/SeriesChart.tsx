@@ -59,8 +59,6 @@ export function SeriesChart({ data }: SeriesChartProps) {
     ticks = ticks.filter(d => data_begin <= d && data_end >= d)
   }
 
-  console.log(formattedData)
-
   return (
     <ResponsiveContainer width="100%" height={400}>
       <LineChart data={formattedData}>
