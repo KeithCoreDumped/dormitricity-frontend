@@ -9,11 +9,7 @@ import { Button } from "@/components/ui/button";
 import { notFound, useParams } from "next/navigation";
 import { formatHMS, formatDaysHours } from "@/lib/format";
 import { AlertTriangle } from "lucide-react";
-
-type Point = {
-    ts: number;
-    kwh: number;
-};
+import { type Point, kwh2kw } from "@/lib/utils";
 
 type LatestData = {
     last_ts: number;
@@ -25,11 +21,9 @@ type LatestData = {
 function DepletionCountdown({
     depleteAtMs,
     mode,
-    lastKw,
 }: {
     depleteAtMs: number | null;
     mode: "none" | "second" | "hour";
-    lastKw: number | null;
 }) {
     const [text, setText] = useState<string>("");
 
@@ -114,7 +108,8 @@ export default function SeriesPage() {
     }, [latest]);
 
     // 确保传给图表的 data 引用稳定（父组件若因其它原因重渲，会减少不必要的重绘）
-    const chartData = useMemo(() => points, [points]);
+    const kwhData = useMemo(() => points, [points]);
+    const kwData = useMemo(() => kwh2kw(points), [points]);
 
     useEffect(() => {
         async function fetchData() {
@@ -135,7 +130,12 @@ export default function SeriesPage() {
                         since.getTime() / 1000
                     }&limit=5000`
                 );
-                setPoints(data.points);
+                setPoints(
+                    data.points.map((p: { ts: number; kwh: number }) => ({
+                        ts: p.ts,
+                        pt: p.kwh,
+                    }))
+                );
                 setLatest(data.latest);
             } catch (err) {
                 if (err instanceof Error) {
@@ -185,13 +185,20 @@ export default function SeriesPage() {
             </div>
 
             {/* Countdown */}
-            <DepletionCountdown
-                depleteAtMs={depleteAtMs}
-                mode={mode}
-                lastKw={latest?.last_kw ?? null}
-            />
+            <DepletionCountdown depleteAtMs={depleteAtMs} mode={mode} />
 
-            <SeriesChart data={chartData} />
+            <SeriesChart
+                data={kwhData}
+                label="Energy"
+                unit="kWh"
+                stroke="#8884d8"
+            />
+            <SeriesChart
+                data={kwData}
+                label="Power"
+                unit="kW"
+                stroke="#e59540ff"
+            />
         </div>
     );
 }
