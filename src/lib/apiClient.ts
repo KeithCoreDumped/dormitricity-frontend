@@ -2,8 +2,8 @@ import { getToken } from './auth';
 
 // const apiBase = process.env.NEXT_PUBLIC_API_BASE;
 
-// const apiBase = "/api";
-const apiBase = "https://dormitricity-worker.kcd049.workers.dev"
+const apiBase = "/api";
+// const apiBase = "https://dormitricity-worker.kcd049.workers.dev"
 
 async function request(method: string, url: string, body?: unknown) {
   const token = getToken();
