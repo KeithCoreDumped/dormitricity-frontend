@@ -12,6 +12,7 @@ export type Subscription = {
   email_alert: boolean;
   last_ts: number;
   last_kwh: number;
+  last_kw: number;
 };
 
 export default function SubsPage() {

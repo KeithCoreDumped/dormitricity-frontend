@@ -2,10 +2,6 @@
 
 export const runtime = 'edge';
 
-// export default function Page({ params }: { params: { hashed_dir: string }}) {
-//   return <pre>OK on Edge: {params.hashed_dir}</pre>;
-// }
-
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/apiClient";
 import { SeriesChart } from "@/components/charts/SeriesChart";
