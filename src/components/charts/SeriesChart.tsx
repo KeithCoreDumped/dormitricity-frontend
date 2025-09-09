@@ -7,7 +7,6 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    Legend,
     ResponsiveContainer,
 } from "recharts";
 
@@ -92,7 +91,7 @@ export function SeriesChart({ data, label, unit, stroke }: SeriesChartProps) {
                     labelFormatter={(ts) =>
                         dayjs(ts).format("YYYY-MM-DD HH:mm:ss")
                     }
-                    formatter={(value: number, name: string) => [
+                    formatter={(value: number) => [
                         `${value.toFixed(2)} ${unit}`, // 显示值 + 单位
                         label, // series 名称
                     ]}

@@ -10,11 +10,40 @@ export type Point = {
     pt: number;
 };
 
+function chargeValue(val: number): number {
+    // const charge_values = [25, 50, 75, 100, 150, 200];
+    if (val > 225) return val;
+    else if (val > 175) return 200;
+    else if (val > 125) return 150;
+    else if (val > 87.5) return 100;
+    else if (val > 62.5) return 75;
+    else if (val > 37.5) return 50;
+    else if (val > 12.5) return 25;
+    else return 0;
+}
+
+function removeCharges(recent: Point[]): Point[] {
+    // remove charge events from recent points
+    if (!recent.length) return [];
+
+    let current = recent[0]!.pt;
+    let total_charge = 0;
+    const res = [recent[0]!];
+
+    for (const { ts, pt } of recent.slice(1)) {
+        const diff = pt - current;
+        current = pt;
+        total_charge += chargeValue(diff);
+        res.push({ ts, pt: pt - total_charge });
+    }
+    return res;
+}
+
 export function kwh2kw(history: Point[], stepSec = 15 * 60): Point[] {
   if (!Array.isArray(history) || history.length < 2) return [];
 
   // 1) 按时间升序去重（若存在相同 ts，保留最后一个）
-  const sorted = [...history]
+  const sorted = [...removeCharges(history)]
     .sort((a, b) => a.ts - b.ts)
     .filter((p, i, arr) => i === 0 || p.ts !== arr[i - 1].ts);
 
