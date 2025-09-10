@@ -47,6 +47,10 @@ export default function SubsPage() {
     fetchSubs();
   }
 
+  function handleSubCanceled() {
+    setIsAdding(false);
+  }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -58,7 +62,7 @@ export default function SubsPage() {
 
       {isAdding && (
         <div className="mb-4">
-          <SubsWizard onSubAdded={handleSubAdded} />
+          <SubsWizard onSubAdded={handleSubAdded} onCancel={handleSubCanceled} />
         </div>
       )}
 
