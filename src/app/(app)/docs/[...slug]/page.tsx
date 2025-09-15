@@ -19,7 +19,7 @@ async function readDoc(slugParts: string[]) {
     try {
       const raw = await fs.readFile(p, "utf-8");
       const { content, data } = matter(raw);
-      return { content, frontmatter: data as Record<string, any> };
+      return { content, frontmatter: data as Record<string, string> };
     } catch {}
   }
   return null;
