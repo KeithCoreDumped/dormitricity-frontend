@@ -1,7 +1,8 @@
+'use client';
+
 import { getToken } from './auth';
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE || "/api";
-// const apiBase = "https://dormitricity-worker.kcd049.workers.dev"
 
 async function request(method: string, url: string, body?: unknown) {
   const token = getToken();
@@ -19,6 +20,9 @@ async function request(method: string, url: string, body?: unknown) {
 
   if (!response.ok) {
     const error = await response.json();
+    if (response.status == 401 || (error.error as string).includes("UNAUTHORIZED")) {
+      window.location.href = "/login"; // redirect to login page
+    }
     throw new Error(error.error || 'Something went wrong');
   }
 
