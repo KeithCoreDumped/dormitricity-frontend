@@ -109,7 +109,7 @@ export function SubsCard({ sub, onSubDeleted }: SubsCardProps) {
             </CardHeader>
             <CardContent>
                 <div className="flex justify-between items-center">
-                    <div className="text-4xl font-bold">{sub.last_kwh} kWh</div>
+                    <div className="text-4xl font-bold">{sub.last_kwh.toFixed(2)} kWh</div>
                     <Badge variant={sub.email_alert ? "default" : "outline"}>
                         {sub.email_alert ? "Alerts On" : "Alerts Off"}
                     </Badge>

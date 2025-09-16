@@ -1,5 +1,14 @@
-import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
+// import remarkGfm from 'remark-gfm'
 
-const nextConfig: NextConfig = {};
+const withMDX = createMDX({ 
+    extension: /\.mdx?$/,
+//     options: {
+//     remarkPlugins: [remarkGfm],
+//     rehypePlugins: [],
+//   },
+});
 
-export default nextConfig;
+const nextConfig = { pageExtensions: ["ts", "tsx", "mdx"] };
+
+export default withMDX(nextConfig);
