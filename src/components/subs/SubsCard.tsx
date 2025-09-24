@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
     Card,
@@ -16,15 +16,27 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Settings, LineChart } from "lucide-react";
 import { formatHMS, formatDaysHours } from "@/lib/format";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import { NotifySetting } from "./NotifySetting";
 
-const ChannelIcon = ({ channel, className }: { channel: string, className?: string }) => {
+const ChannelIcon = ({
+    channel,
+    className,
+}: {
+    channel: string;
+    className?: string;
+}) => {
     const iconMap: Record<string, string> = {
-        wxwork: '/wxwork.svg',
-        feishu: '/feishu.svg',
-        serverchan: '/serverchan.png',
-        none: '/mute.svg'
+        wxwork: "/wxwork.svg",
+        feishu: "/feishu.svg",
+        serverchan: "/serverchan.png",
+        none: "/mute.svg",
     };
     const src = iconMap[channel];
     if (!src) return null;
@@ -42,20 +54,20 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     const notificationStatus = useMemo(() => {
-        if (sub.notify_channel === 'none') {
-            return { text: 'Off', active: false };
+        if (sub.notify_channel === "none") {
+            return { text: "Off", active: false };
         }
         const activeRules = [];
         if (sub.threshold_kwh > 0) {
-            activeRules.push('Low Power');
+            activeRules.push("Low Power");
         }
         if (sub.within_hours > 0) {
-            activeRules.push('Depletion');
+            activeRules.push("Depletion");
         }
         if (activeRules.length > 0) {
             return { text: "+" + activeRules.length, active: true };
         }
-        return { text: 'On', active: true };
+        return { text: "On", active: true };
     }, [sub.notify_channel, sub.threshold_kwh, sub.within_hours]);
 
     // 估计耗尽时间（毫秒时间戳）与显示模式
@@ -128,6 +140,34 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
         setIsSettingsOpen(false);
     }
 
+    function formatTime(ts: number): string {
+        const now = Date.now();
+        const diff = now - ts * 1000; // ts is in seconds → ms
+
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (minutes < 60) {
+            return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
+        } else if (hours < 24) {
+            return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
+        } else if (days < 7) {
+            return `${days} day${days !== 1 ? "s" : ""} ago`;
+        }
+
+        // Fallback: show exact time (24h)
+        return new Date(ts * 1000).toLocaleString(undefined, {
+            hour12: false,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+    }
+
     return (
         <Card className="flex flex-col">
             <CardHeader>
@@ -135,18 +175,26 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                     <div>
                         <CardTitle>{sub.canonical_id}</CardTitle>
                         <CardDescription>
-                            Last updated:{" "}
-                            {new Date(sub.last_ts * 1000).toLocaleString()}
+                            Last updated:
+                            {" "}
+                            {formatTime(sub.last_ts)}
                         </CardDescription>
                     </div>
-                    <Badge variant={notificationStatus.active ? "default" : "outline"} className="flex items-center gap-1.5 whitespace-nowrap">
+                    <Badge
+                        variant={
+                            notificationStatus.active ? "default" : "outline"
+                        }
+                        className="flex items-center gap-1.5 whitespace-nowrap"
+                    >
                         <ChannelIcon channel={sub.notify_channel} />
                         <span>{notificationStatus.text}</span>
                     </Badge>
                 </div>
             </CardHeader>
             <CardContent className="flex-grow">
-                <div className="text-4xl font-bold">{sub.last_kwh.toFixed(2)} kWh</div>
+                <div className="text-4xl font-bold">
+                    {sub.last_kwh.toFixed(2)} kWh
+                </div>
 
                 <div className="mt-3 min-h-[1.5rem] text-sm text-muted-foreground flex items-center">
                     {countdown && (
@@ -168,11 +216,17 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                         <DialogHeader>
                             <DialogTitle>Notify Settings</DialogTitle>
                         </DialogHeader>
-                        <NotifySetting sub={sub} onSuccess={handleSuccess} onSubDeleted={handleSubDeleted} />
+                        <NotifySetting
+                            sub={sub}
+                            onSuccess={handleSuccess}
+                            onSubDeleted={handleSubDeleted}
+                        />
                     </DialogContent>
                 </Dialog>
                 <Button variant="outline" size="icon" asChild>
-                    <Link href={`/series/${sub.hashed_dir}`}><LineChart className="h-4 w-4" /></Link>
+                    <Link href={`/series/${sub.hashed_dir}`}>
+                        <LineChart className="h-4 w-4" />
+                    </Link>
                 </Button>
             </CardFooter>
         </Card>
