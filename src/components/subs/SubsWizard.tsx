@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,7 +18,6 @@ import {
 
 const formSchema = z.object({
     canonical_id: z.string().min(1, "Dormitory ID is required"),
-    email_alert: z.boolean(),
 });
 
 type SubsWizardProps = {
@@ -35,7 +33,6 @@ export function SubsWizard({ onSubAdded, onCancel }: SubsWizardProps) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             canonical_id: "",
-            email_alert: false,
         },
     });
 
@@ -72,28 +69,6 @@ export function SubsWizard({ onSubAdded, onCancel }: SubsWizardProps) {
                                 />
                             </FormControl>
                             <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="email_alert"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                                <FormLabel className="text-base">
-                                    Notification
-                                </FormLabel>
-                                <p className="text-sm text-muted-foreground">
-                                    Receive notifications on low electricity.
-                                </p>
-                            </div>
-                            <FormControl>
-                                <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                />
-                            </FormControl>
                         </FormItem>
                     )}
                 />

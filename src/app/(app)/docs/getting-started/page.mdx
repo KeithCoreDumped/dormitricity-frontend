@@ -1,13 +1,21 @@
-# 使用帮助
+# Getting Started
 
-> ⚠️///施工中///⚠️
+Welcome to Dormitricity! This service helps you track your dormitory's electricity usage, view trends, and receive timely notifications to avoid running out of power.
 
-[Dormitricity](/) 通过持续(每10分钟)爬取宿舍电费余量，提供过去宿舍电费余量和功率趋势，并提供耗尽预测和充值提醒。
+## How It Works
 
-## 工作原理
+Dormitricity works by periodically (every 10 minutes) scraping the electricity balance of subscribed dormitories. This data is then used to provide you with:
 
+*   Historical data on your electricity balance and power consumption.
+*   Trends and estimates for when your balance might be depleted.
+*   Notifications to remind you to recharge.
 
+## Key Features
 
-## 系统架构
+*   **Dashboard:** Get an at-a-glance view of all your subscribed dormitories.
+*   **Usage Trends:** View detailed charts of your electricity usage over time.
+*   **Notifications:** Set up customizable notifications to be alerted before you run out of power. For more details, see the [Notifications documentation](./notification).
 
+## System Architecture
 
+The system consists of a Python-based crawler, a Cloudflare Worker backend, and a React-based frontend.

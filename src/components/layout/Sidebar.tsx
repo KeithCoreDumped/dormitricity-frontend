@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 // import { usePathname } from "next/navigation";
-import {FileText, Home, Package, Users} from "lucide-react";
+import {
+    Home,
+    FileText,
+    Users
+} from "lucide-react";
 import Image from "next/image";
 import {CollapsibleNav} from "@/components/layout/CollapsibleNav";
 
 export const navLinks = [
   { href: "/", label: "Dashboard", icon: Home },
-  { href: "/subs", label: "Subscriptions", icon: Package },
   { href: "/account", label: "Account", icon: Users },
   {
     href: "/docs",

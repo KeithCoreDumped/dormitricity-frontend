@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/apiClient";
-import { Subscription } from "./subs/page";
+import { Subscription } from "@/lib/types";
 import { SubsCard } from "@/components/subs/SubsCard";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { AddSubCard } from "@/components/subs/AddSubCard";
+import Loading from "./loading"
 
 export default function DashboardPage() {
   const [subs, setSubs] = useState<Subscription[]>([]);
@@ -13,7 +13,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function fetchSubs() {
-    setIsLoading(true);
+    // Don't set loading to true here to avoid flicker when refetching
     setError(null);
     try {
       const data = await apiClient.get("/subs");
@@ -34,29 +34,21 @@ export default function DashboardPage() {
   }, []);
 
   if (isLoading) {
-    return <p>Loading dashboard...</p>;
+    return Loading();
   }
 
   if (error) {
     return <p className="text-red-500">{error}</p>;
   }
 
-  if (subs.length === 0) {
-    return (
-      <div className="text-center">
-        <p>You have no subscriptions yet.</p>
-        <Button asChild>
-          <Link href="/subs">Add Subscription</Link>
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {subs.map((sub) => (
-        <SubsCard key={sub.hashed_dir} sub={sub} onSubDeleted={fetchSubs} />
+        <SubsCard key={sub.hashed_dir} sub={sub} onSubDeleted={fetchSubs} onChanged={fetchSubs} />
       ))}
+      {subs.length < 3 && (
+        <AddSubCard onSubAdded={fetchSubs} />
+      )}
     </div>
   );
 }

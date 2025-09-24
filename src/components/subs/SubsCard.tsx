@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
     Card,
@@ -10,33 +10,53 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Subscription } from "@/app/(app)/subs/page";
+import { Subscription } from "@/lib/types";
 import Link from "next/link";
-import { apiClient } from "@/lib/apiClient";
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Settings, LineChart } from "lucide-react";
 import { formatHMS, formatDaysHours } from "@/lib/format";
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { NotifySetting } from "./NotifySetting";
+
+const ChannelIcon = ({ channel, className }: { channel: string, className?: string }) => {
+    const iconMap: Record<string, string> = {
+        wxwork: '/wxwork.svg',
+        feishu: '/feishu.svg',
+        serverchan: '/serverchan.png',
+        none: '/mute.svg'
+    };
+    const src = iconMap[channel];
+    if (!src) return null;
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={channel} className={`w-4 h-4 ${className}`} />;
+};
 
 type SubsCardProps = {
     sub: Subscription;
     onSubDeleted: () => void;
+    onChanged: () => void;
 };
 
-export function SubsCard({ sub, onSubDeleted }: SubsCardProps) {
-    async function handleDelete() {
-        if (confirm("Are you sure you want to delete this subscription?")) {
-            try {
-                await apiClient.delete(`/subs/${sub.hashed_dir}`);
-                onSubDeleted();
-            } catch (err) {
-                if (err instanceof Error) {
-                    alert(err.message);
-                } else {
-                    alert("An unknown error occurred");
-                }
-            }
+export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+    const notificationStatus = useMemo(() => {
+        if (sub.notify_channel === 'none') {
+            return { text: 'Off', active: false };
         }
-    }
+        const activeRules = [];
+        if (sub.threshold_kwh > 0) {
+            activeRules.push('Low Power');
+        }
+        if (sub.within_hours > 0) {
+            activeRules.push('Depletion');
+        }
+        if (activeRules.length > 0) {
+            return { text: "+" + activeRules.length, active: true };
+        }
+        return { text: 'On', active: true };
+    }, [sub.notify_channel, sub.threshold_kwh, sub.within_hours]);
 
     // 估计耗尽时间（毫秒时间戳）与显示模式
     const { depleteAtMs, mode } = useMemo(() => {
@@ -98,22 +118,35 @@ export function SubsCard({ sub, onSubDeleted }: SubsCardProps) {
         return () => clearInterval(id);
     }, [depleteAtMs, mode]);
 
+    function handleSuccess() {
+        onChanged();
+        setIsSettingsOpen(false);
+    }
+
+    function handleSubDeleted() {
+        onSubDeleted();
+        setIsSettingsOpen(false);
+    }
+
     return (
-        <Card>
+        <Card className="flex flex-col">
             <CardHeader>
-                <CardTitle>{sub.canonical_id}</CardTitle>
-                <CardDescription>
-                    Last updated:{" "}
-                    {new Date(sub.last_ts * 1000).toLocaleString()}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex justify-between items-center">
-                    <div className="text-4xl font-bold">{sub.last_kwh.toFixed(2)} kWh</div>
-                    <Badge variant={sub.email_alert ? "default" : "outline"}>
-                        {sub.email_alert ? "Alerts On" : "Alerts Off"}
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle>{sub.canonical_id}</CardTitle>
+                        <CardDescription>
+                            Last updated:{" "}
+                            {new Date(sub.last_ts * 1000).toLocaleString()}
+                        </CardDescription>
+                    </div>
+                    <Badge variant={notificationStatus.active ? "default" : "outline"} className="flex items-center gap-1.5 whitespace-nowrap">
+                        <ChannelIcon channel={sub.notify_channel} />
+                        <span>{notificationStatus.text}</span>
                     </Badge>
                 </div>
+            </CardHeader>
+            <CardContent className="flex-grow">
+                <div className="text-4xl font-bold">{sub.last_kwh.toFixed(2)} kWh</div>
 
                 <div className="mt-3 min-h-[1.5rem] text-sm text-muted-foreground flex items-center">
                     {countdown && (
@@ -125,11 +158,21 @@ export function SubsCard({ sub, onSubDeleted }: SubsCardProps) {
                 </div>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
-                <Button variant="outline" asChild>
-                    <Link href={`/series/${sub.hashed_dir}`}>View Trends</Link>
-                </Button>
-                <Button variant="destructive" onClick={handleDelete}>
-                    Unsubscribe
+                <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="icon">
+                            <Settings className="h-4 w-4" />
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Notify Settings</DialogTitle>
+                        </DialogHeader>
+                        <NotifySetting sub={sub} onSuccess={handleSuccess} onSubDeleted={handleSubDeleted} />
+                    </DialogContent>
+                </Dialog>
+                <Button variant="outline" size="icon" asChild>
+                    <Link href={`/series/${sub.hashed_dir}`}><LineChart className="h-4 w-4" /></Link>
                 </Button>
             </CardFooter>
         </Card>
