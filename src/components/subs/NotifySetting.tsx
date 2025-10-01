@@ -59,7 +59,7 @@ const formSchema = z
 
             const re = {
                 serverchan: /^(SCT[0-9A-Za-z]+)$/,
-                uuid: /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/,
+                uuid: /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
             };
 
             if (notify_channel === "serverchan") {
@@ -229,6 +229,7 @@ export function NotifySetting({
             const result = await apiClient.post("/subs/test-notify", {
                 notify_channel,
                 notify_token,
+                canonical_id: sub.canonical_id
             });
 
             if (result.ok) {
