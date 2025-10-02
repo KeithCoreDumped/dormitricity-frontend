@@ -27,76 +27,87 @@ import { NotifyChannel, Subscription } from "@/lib/types";
 import { apiClient } from "@/lib/apiClient";
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const formSchema = z
-    .object({
-        notify_channel: z.enum(["none", "wxwork", "feishu", "serverchan"]),
-        notify_token: z.string().optional(),
-        threshold_kwh_enabled: z.boolean(),
-        threshold_kwh: z.number().optional(),
-        within_hours_enabled: z.boolean(),
-        within_hours: z.number().optional(),
-        cooldown_sec: z.number(),
-    })
-    .refine(
-        (data) => {
-            if (data.notify_channel !== "none" && !data.notify_token) {
-                return false;
-            }
-            return true;
-        },
-        { message: "Token is required", path: ["notify_token"] }
-    )
-    .refine(
-        (data) => {
-            const { notify_channel, notify_token } = data;
-            if (notify_channel === "none") {
+const getFormSchema = (t: (key: string) => string) =>
+    z
+        .object({
+            notify_channel: z.enum(["none", "wxwork", "feishu", "serverchan"]),
+            notify_token: z.string().optional(),
+            threshold_kwh_enabled: z.boolean(),
+            threshold_kwh: z.number().optional(),
+            within_hours_enabled: z.boolean(),
+            within_hours: z.number().optional(),
+            cooldown_sec: z.number(),
+        })
+        .refine(
+            (data) => {
+                if (data.notify_channel !== "none" && !data.notify_token) {
+                    return false;
+                }
                 return true;
-            }
-            if (!notify_token) {
-                return false; // Token is required if channel is not 'none'
-            }
+            },
+            { message: t("notify.token_required"), path: ["notify_token"] }
+        )
+        .refine(
+            (data) => {
+                const { notify_channel, notify_token } = data;
+                if (notify_channel === "none") {
+                    return true;
+                }
+                if (!notify_token) {
+                    return false; // Token is required if channel is not 'none'
+                }
 
-            const re = {
-                serverchan: /^(SCT[0-9A-Za-z]+)$/,
-                uuid: /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
-            };
+                const re = {
+                    serverchan: /^(SCT[0-9A-Za-z]+)$/,
+                    uuid: /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
+                };
 
-            if (notify_channel === "serverchan") {
-                return re.serverchan.test(notify_token);
-            }
-            if (notify_channel === "wxwork" || notify_channel === "feishu") {
-                return re.uuid.test(notify_token);
-            }
+                if (notify_channel === "serverchan") {
+                    return re.serverchan.test(notify_token);
+                }
+                if (notify_channel === "wxwork" || notify_channel === "feishu") {
+                    return re.uuid.test(notify_token);
+                }
 
-            return false; // Should not be reached if channel is valid
-        },
-        { message: "Token is invalid or does not match the selected channel", path: ["notify_token"] }
-    )
-    .refine(
-        (data) => {
-            if (
-                data.threshold_kwh_enabled &&
-                (data.threshold_kwh === undefined || data.threshold_kwh <= 0)
-            ) {
-                return false;
+                return false; // Should not be reached if channel is valid
+            },
+            {
+                message: t("notify.token_invalid"),
+                path: ["notify_token"],
             }
-            return true;
-        },
-        { message: "Must be a positive number", path: ["threshold_kwh"] }
-    )
-    .refine(
-        (data) => {
-            if (
-                data.within_hours_enabled &&
-                (data.within_hours === undefined || data.within_hours <= 0)
-            ) {
-                return false;
+        )
+        .refine(
+            (data) => {
+                if (
+                    data.threshold_kwh_enabled &&
+                    (data.threshold_kwh === undefined || data.threshold_kwh <= 0)
+                ) {
+                    return false;
+                }
+                return true;
+            },
+            {
+                message: t("notify.positive_number_error"),
+                path: ["threshold_kwh"],
             }
-            return true;
-        },
-        { message: "Must be a positive number", path: ["within_hours"] }
-    );
+        )
+        .refine(
+            (data) => {
+                if (
+                    data.within_hours_enabled &&
+                    (data.within_hours === undefined || data.within_hours <= 0)
+                ) {
+                    return false;
+                }
+                return true;
+            },
+            {
+                message: t("notify.positive_number_error"),
+                path: ["within_hours"],
+            }
+        );
 
 type NotifySettingProps = {
     sub: Subscription;
@@ -121,6 +132,8 @@ export function NotifySetting({
     onSuccess,
     onSubDeleted,
 }: NotifySettingProps) {
+    const { t } = useTranslation();
+    const formSchema = getFormSchema(t);
     const [isTesting, setIsTesting] = useState(false);
     const [testStatus, setTestStatus] = useState<{
         ok: boolean;
@@ -217,7 +230,7 @@ export function NotifySetting({
         if (!notify_token) {
             setTestStatus({
                 ok: false,
-                message: "Token is required to send a test notification.",
+                message: t("notify.token_required_for_test"),
             });
             return;
         }
@@ -229,20 +242,20 @@ export function NotifySetting({
             const result = await apiClient.post("/subs/test-notify", {
                 notify_channel,
                 notify_token,
-                canonical_id: sub.canonical_id
+                canonical_id: sub.canonical_id,
             });
 
             if (result.ok) {
-                setTestStatus({ ok: true, message: "Test successful!" });
+                setTestStatus({ ok: true, message: t("notify.test_successful") });
             } else {
                 throw new Error(
-                    result.error || "Failed to send test notification."
+                    result.error || t("notify.test_failed_generic")
                 );
             }
         } catch (err: unknown) {
             setTestStatus({
                 ok: false,
-                message: (err as Error).message || "An unknown error occurred.",
+                message: (err as Error).message || t("unknown_error"),
             });
         } finally {
             setIsTesting(false);
@@ -250,15 +263,15 @@ export function NotifySetting({
     }
 
     async function handleDelete() {
-        if (confirm("Are you sure you want to delete this subscription?")) {
+        if (confirm(t("notify.confirm_delete"))) {
             try {
                 await apiClient.delete(`/subs/${sub.hashed_dir}`);
                 onSubDeleted();
             } catch (err) {
                 if (err instanceof Error) {
-                    alert(`Error: ${err.message}`);
+                    alert(t("notify.error", { message: err.message }));
                 } else {
-                    alert("An unknown error occurred");
+                    alert(t("unknown_error"));
                 }
             }
         }
@@ -279,9 +292,9 @@ export function NotifySetting({
             onSuccess();
         } catch (err) {
             if (err instanceof Error) {
-                alert(`Error: ${err.message}`);
+                alert(t("notify.error", { message: err.message }));
             } else {
-                alert("An unknown error occurred");
+                alert(t("unknown_error"));
             }
         } finally {
             setIsSubmitting(false);
@@ -296,7 +309,7 @@ export function NotifySetting({
                     name="notify_channel"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Notification Channel</FormLabel>
+                            <FormLabel>{t("notify.channel_label")}</FormLabel>
                             <Select
                                 onValueChange={(value) => {
                                     field.onChange(value);
@@ -306,31 +319,36 @@ export function NotifySetting({
                             >
                                 <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select a channel" />
+                                        <SelectValue
+                                            placeholder={t(
+                                                "notify.select_channel_placeholder"
+                                            )}
+                                        />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
                                     <SelectItem value="none">
                                         <div className="flex items-center">
-                                            <ChannelIcon channel="none" /> None
+                                            <ChannelIcon channel="none" />{" "}
+                                            {t("notify.none_channel")}
                                         </div>
                                     </SelectItem>
                                     <SelectItem value="wxwork">
                                         <div className="flex items-center">
                                             <ChannelIcon channel="wxwork" />{" "}
-                                            WeCom
+                                            {t("notify.wecom_channel")}
                                         </div>
                                     </SelectItem>
                                     <SelectItem value="feishu">
                                         <div className="flex items-center">
                                             <ChannelIcon channel="feishu" />{" "}
-                                            Feishu
+                                            {t("notify.feishu_channel")}
                                         </div>
                                     </SelectItem>
                                     <SelectItem value="serverchan">
                                         <div className="flex items-center">
                                             <ChannelIcon channel="serverchan" />{" "}
-                                            ServerChan
+                                            {t("notify.serverchan_channel")}
                                         </div>
                                     </SelectItem>
                                 </SelectContent>
@@ -347,13 +365,13 @@ export function NotifySetting({
                             name="notify_token"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
-                                        Notification Token / Webhook URL
-                                    </FormLabel>
+                                    <FormLabel>{t("notify.token_label")}</FormLabel>
                                     <div className="flex items-center space-x-2">
                                         <FormControl>
                                             <Input
-                                                placeholder="Paste Webhook URL or Token"
+                                                placeholder={t(
+                                                    "notify.token_placeholder"
+                                                )}
                                                 {...field}
                                                 onChange={handleTokenChange}
                                             />
@@ -374,14 +392,16 @@ export function NotifySetting({
                                                 <Check className="h-4 w-4 text-green-500" />
                                             ) : (
                                                 <span className="text-sm">
-                                                    Test
+                                                    {t("notify.test_button")}
                                                 </span>
                                             )}
                                         </Button>
                                     </div>
                                     {testStatus && !testStatus.ok && (
                                         <FormDescription className="text-red-500">
-                                            Test Failed: {testStatus.message}
+                                            {t("notify.test_failed", {
+                                                message: testStatus.message,
+                                            })}
                                         </FormDescription>
                                     )}
                                     <FormMessage />
@@ -397,11 +417,14 @@ export function NotifySetting({
                                     <FormItem className="flex flex-row items-center justify-between">
                                         <div className="space-y-0.5">
                                             <FormLabel>
-                                                Low Power Threshold
+                                                {t(
+                                                    "notify.low_power_threshold_label"
+                                                )}
                                             </FormLabel>
                                             <FormDescription>
-                                                Notify when power is below a
-                                                certain kWh.
+                                                {t(
+                                                    "notify.low_power_threshold_description"
+                                                )}
                                             </FormDescription>
                                         </div>
                                         <FormControl>
@@ -462,11 +485,14 @@ export function NotifySetting({
                                     <FormItem className="flex flex-row items-center justify-between">
                                         <div className="space-y-0.5">
                                             <FormLabel>
-                                                Depletion Threshold
+                                                {t(
+                                                    "notify.depletion_threshold_label"
+                                                )}
                                             </FormLabel>
                                             <FormDescription>
-                                                Notify when power is estimated
-                                                to run out soon.
+                                                {t(
+                                                    "notify.depletion_threshold_description"
+                                                )}
                                             </FormDescription>
                                         </div>
                                         <FormControl>
@@ -524,7 +550,7 @@ export function NotifySetting({
                             name="cooldown_sec"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Cooldown</FormLabel>
+                                    <FormLabel>{t("notify.cooldown_label")}</FormLabel>
                                     <Select
                                         onValueChange={(value) =>
                                             field.onChange(parseInt(value, 10))
@@ -533,21 +559,25 @@ export function NotifySetting({
                                     >
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select a cooldown period" />
+                                                <SelectValue
+                                                    placeholder={t(
+                                                        "notify.cooldown_placeholder"
+                                                    )}
+                                                />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value="43200">
-                                                12 hours
+                                                {t("notify.cooldown_12h")}
                                             </SelectItem>
                                             <SelectItem value="64800">
-                                                18 hours
+                                                {t("notify.cooldown_18h")}
                                             </SelectItem>
                                             <SelectItem value="86400">
-                                                24 hours
+                                                {t("notify.cooldown_24h")}
                                             </SelectItem>
                                             <SelectItem value="172800">
-                                                48 hours
+                                                {t("notify.cooldown_48h")}
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -564,7 +594,7 @@ export function NotifySetting({
                         variant="destructive"
                         onClick={handleDelete}
                     >
-                        Unsubscribe
+                        {t("notify.unsubscribe_button")}
                     </Button>
                     <Button
                         type="submit"
@@ -576,7 +606,7 @@ export function NotifySetting({
                         {isSubmitting ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : (
-                            "Save"
+                            t("notify.save_button")
                         )}
                     </Button>
                 </div>

@@ -14,12 +14,16 @@ import { CircleUser, Menu } from "lucide-react";
 import Link from "next/link";
 import { removeToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { navLinks } from "./Sidebar";
+import { navLinks } from "./links";
 import Image from "next/image";
 import { CollapsibleNav } from "./CollapsibleNav";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Topbar() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const links = navLinks(t, i18n.language);
 
   function logout() {
     removeToken();
@@ -32,12 +36,12 @@ export function Topbar() {
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle navigation menu</span>
+            <span className="sr-only">{t('topbar.toggle_nav')}</span>
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col">
           <SheetHeader>
-            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            <SheetTitle className="sr-only">{t('topbar.nav_menu')}</SheetTitle>
           </SheetHeader>
           <nav className="grid gap-2 text-lg font-medium">
             <Link
@@ -52,7 +56,7 @@ export function Topbar() {
               />
               <span className="sr-only">Dormitricity</span>
             </Link>
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <CollapsibleNav key={link.label} link={link} />
             ))}
           </nav>
@@ -61,19 +65,20 @@ export function Topbar() {
       <div className="w-full flex-1">
         {/* Add breadcrumbs here if needed */}
       </div>
+      <LanguageSwitcher />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full">
             <CircleUser className="h-5 w-5" />
-            <span className="sr-only">Toggle user menu</span>
+            <span className="sr-only">{t('topbar.toggle_user_menu')}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>{t('topbar.my_account')}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => router.push('/account')}>Settings</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/account')}>{t('topbar.settings')}</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={logout}>{t('topbar.logout')}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

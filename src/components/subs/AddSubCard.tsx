@@ -6,30 +6,30 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Plus } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
-import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export function AddSubCard({ onSubAdded }: { onSubAdded: () => void }) {
+    const { t } = useTranslation();
     const [isAdding, setIsAdding] = useState(false);
     const [canonicalId, setCanonicalId] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     async function handleAdd() {
         if (!canonicalId) {
-            toast.error('Please enter a dormitory ID.');
+            alert(t('add_sub.error_enter_id'));
             return;
         }
         setIsLoading(true);
-        const toastId = toast.loading('Adding subscription...');
         try {
             await apiClient.post('/subs', { canonical_id: canonicalId });
-            toast.success('Subscription added!', { id: toastId });
+            alert(t('add_sub.success'));
             setIsAdding(false);
             setCanonicalId('');
             onSubAdded();
         } catch (err: unknown) {
             const error = err as Error & { response?: { data?: { error?: string } } };
-            const errorMsg = error.response?.data?.error || error.message || 'An unknown error occurred';
-            toast.error(`Failed to add: ${errorMsg}`, { id: toastId });
+            const errorMsg = error.response?.data?.error || error.message || t('unknown_error');
+            alert(t('add_sub.error_failed', { errorMsg }));
         } finally {
             setIsLoading(false);
         }
@@ -49,11 +49,11 @@ export function AddSubCard({ onSubAdded }: { onSubAdded: () => void }) {
     return (
         <Card className="h-full min-h-[280px] flex flex-col">
             <CardHeader>
-                <CardTitle>New Subscription</CardTitle>
+                <CardTitle>{t('add_sub.new_subscription_title')}</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow flex items-center">
                 <Input
-                    placeholder="e.g., 5-202, E-505"
+                    placeholder={t('add_sub.placeholder')}
                     value={canonicalId}
                     onChange={(e) => setCanonicalId(e.target.value)}
                     disabled={isLoading}
@@ -61,10 +61,10 @@ export function AddSubCard({ onSubAdded }: { onSubAdded: () => void }) {
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsAdding(false)} disabled={isLoading}>
-                    Cancel
+                    {t('add_sub.cancel_button')}
                 </Button>
                 <Button onClick={handleAdd} disabled={isLoading}>
-                    {isLoading ? 'Adding...' : 'Add'}
+                    {isLoading ? t('add_sub.adding_button') : t('add_sub.add_button')}
                 </Button>
             </CardFooter>
         </Card>

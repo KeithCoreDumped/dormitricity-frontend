@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
     Card,
@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Settings, LineChart } from "lucide-react";
 import { formatHMS, formatDaysHours } from "@/lib/format";
+import { useTranslation } from "react-i18next";
 
 import {
     Dialog,
@@ -51,24 +52,25 @@ type SubsCardProps = {
 };
 
 export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
+    const { t } = useTranslation();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     const notificationStatus = useMemo(() => {
         if (sub.notify_channel === "none") {
-            return { text: "Off", active: false };
+            return { text: t('subs_card.off_status'), active: false };
         }
         const activeRules = [];
         if (sub.threshold_kwh > 0) {
-            activeRules.push("Low Power");
+            activeRules.push(t('subs_card.low_power_rule'));
         }
         if (sub.within_hours > 0) {
-            activeRules.push("Depletion");
+            activeRules.push(t('subs_card.depletion_rule'));
         }
         if (activeRules.length > 0) {
             return { text: "+" + activeRules.length, active: true };
         }
-        return { text: "On", active: true };
-    }, [sub.notify_channel, sub.threshold_kwh, sub.within_hours]);
+        return { text: t('subs_card.on_status'), active: true };
+    }, [sub.notify_channel, sub.threshold_kwh, sub.within_hours, t]);
 
     // 估计耗尽时间（毫秒时间戳）与显示模式
     const { depleteAtMs, mode } = useMemo(() => {
@@ -116,9 +118,9 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                 return;
             }
             if (mode === "second") {
-                setCountdown(`${formatHMS(left)} before depletion`);
+                setCountdown(t('subs_card.before_depletion', { time: formatHMS(left) }));
             } else {
-                setCountdown(`Depletes in ${formatDaysHours(left)}`);
+                setCountdown(t('subs_card.depletes_in', { time: formatDaysHours(left, t) }));
             }
         };
 
@@ -128,7 +130,7 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
         const interval = mode === "second" ? 1000 : 60 * 60 * 1000; // every second/every hour
         const id = setInterval(tick, interval);
         return () => clearInterval(id);
-    }, [depleteAtMs, mode]);
+    }, [depleteAtMs, mode, t]);
 
     function handleSuccess() {
         onChanged();
@@ -149,11 +151,11 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
         const days = Math.floor(diff / 86400000);
 
         if (minutes < 60) {
-            return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
+            return t('subs_card.minutes_ago', { count: minutes, s: minutes !== 1 ? 's' : '' });
         } else if (hours < 24) {
-            return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
+            return t('subs_card.hours_ago', { count: hours, s: hours !== 1 ? 's' : '' });
         } else if (days < 7) {
-            return `${days} day${days !== 1 ? "s" : ""} ago`;
+            return t('subs_card.days_ago', { count: days, s: days !== 1 ? 's' : '' });
         }
 
         // Fallback: show exact time (24h)
@@ -175,9 +177,7 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                     <div>
                         <CardTitle>{sub.canonical_id}</CardTitle>
                         <CardDescription>
-                            Last updated:
-                            {" "}
-                            {formatTime(sub.last_ts)}
+                            {t('subs_card.last_updated', { time: formatTime(sub.last_ts) })}
                         </CardDescription>
                     </div>
                     <Badge
@@ -214,7 +214,7 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Notify Settings</DialogTitle>
+                            <DialogTitle>{t('subs_card.notify_settings_title')}</DialogTitle>
                         </DialogHeader>
                         <NotifySetting
                             sub={sub}

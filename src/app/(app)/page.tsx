@@ -5,9 +5,11 @@ import { apiClient } from "@/lib/apiClient";
 import { Subscription } from "@/lib/types";
 import { SubsCard } from "@/components/subs/SubsCard";
 import { AddSubCard } from "@/components/subs/AddSubCard";
-import Loading from "./loading"
+import Loading from "./loading";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export default function DashboardPage() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("An unknown error occurred");
+        setError(t('unknown_error'));
       }
     } finally {
       setIsLoading(false);

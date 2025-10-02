@@ -18,6 +18,7 @@ import { setToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useTranslation } from "react-i18next";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -25,6 +26,7 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export default function LoginPage() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("An unknown error occurred");
+        setError(t('unknown_error'));
       }
     } finally {
       setIsLoading(false);
@@ -56,12 +58,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center py-12">
       <Card className="mx-auto max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">{t('login.title')}</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            {t('login.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -72,7 +74,7 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('login.email_label')}</FormLabel>
                     <FormControl>
                       <Input placeholder="m@example.com" {...field} />
                     </FormControl>
@@ -85,7 +87,7 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('login.password_label')}</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
@@ -95,14 +97,14 @@ export default function LoginPage() {
               />
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? t('login.logging_in_button') : t('login.login_button')}
               </Button>
             </form>
           </Form>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
+            {t('login.no_account')}{" "}
             <Link href="/register" className="underline">
-              Sign up
+              {t('login.signup_link')}
             </Link>
           </div>
         </CardContent>

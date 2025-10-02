@@ -1,31 +1,14 @@
 'use client';
 
 import Link from "next/link";
-// import { usePathname } from "next/navigation";
-import {
-    Home,
-    FileText,
-    Users
-} from "lucide-react";
 import Image from "next/image";
-import {CollapsibleNav} from "@/components/layout/CollapsibleNav";
-
-export const navLinks = [
-  { href: "/", label: "Dashboard", icon: Home },
-  { href: "/account", label: "Account", icon: Users },
-  {
-    href: "/docs",
-    label: "Docs",
-    icon: FileText,
-    subLinks: [
-      { href: "/docs/getting-started", label: "Getting Started" },
-      { href: "/docs/notification", label: "Notification" },
-    ],
-  },
-];
+import { CollapsibleNav } from "@/components/layout/CollapsibleNav";
+import { useTranslation } from "react-i18next";
+import { navLinks } from "./links";
 
 export function Sidebar() {
-  // const pathname = usePathname();
+  const { t, i18n } = useTranslation();
+  const links = navLinks(t, i18n.language);
 
   return (
     <div className="hidden border-r bg-muted/40 md:block">
@@ -43,7 +26,7 @@ export function Sidebar() {
         </div>
         <div className="flex-1">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-            {navLinks.map((link) => (
+            {links.map((link) => (
                 <CollapsibleNav key={link.label} link={link} />
             ))}
           </nav>

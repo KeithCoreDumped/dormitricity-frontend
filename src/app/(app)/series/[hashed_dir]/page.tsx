@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 export const runtime = "edge";
 
@@ -10,6 +10,7 @@ import { notFound, useParams } from "next/navigation";
 import { formatHMS, formatDaysHours } from "@/lib/format";
 import { AlertTriangle } from "lucide-react";
 import { type Point, kwh2kw } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 type LatestData = {
     last_ts: number;
@@ -25,6 +26,7 @@ function DepletionCountdown({
     depleteAtMs: number | null;
     mode: "none" | "second" | "hour";
 }) {
+    const { t } = useTranslation();
     const [text, setText] = useState<string>("");
 
     useEffect(() => {
@@ -40,9 +42,9 @@ function DepletionCountdown({
                 return;
             }
             if (mode === "second") {
-                setText(`${formatHMS(left)} before depletion.`);
+                setText(`${formatHMS(left)} ${t('series.before_depletion')}`);
             } else {
-                setText(`Depletes in ${formatDaysHours(left)}.`);
+                setText(`${t('series.depletes_in')} ${formatDaysHours(left, t)}`);
             }
         };
 
@@ -50,7 +52,7 @@ function DepletionCountdown({
         const interval = mode === "second" ? 1000 : 60 * 60 * 1000;
         const id = setInterval(tick, interval);
         return () => clearInterval(id);
-    }, [depleteAtMs, mode]);
+    }, [depleteAtMs, mode, t]);
 
     // 固定最小高度，避免无倒计时导致布局跳动
     return (
@@ -64,7 +66,7 @@ function DepletionCountdown({
                     <div className="flex items-center justify-center gap-2 text-red-700">
                         <AlertTriangle className="h-6 w-6 shrink-0" />
                         <span className="font-semibold text-base sm:text-lg">
-                            {text} Please recharge in time.
+                            {text} {t('series.recharge_in_time')}
                         </span>
                     </div>
                 </div>
@@ -74,6 +76,7 @@ function DepletionCountdown({
 }
 
 export default function SeriesPage() {
+    const { t } = useTranslation();
     const { hashed_dir } = useParams() as { hashed_dir: string };
     const [points, setPoints] = useState<Point[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -121,7 +124,8 @@ export default function SeriesPage() {
                     since.setDate(since.getDate() - 7);
                 } else if (timeRange === "30d") {
                     since.setDate(since.getDate() - 30);
-                } else {
+                }
+                else {
                     since.setHours(since.getHours() - 24);
                 }
 
@@ -145,41 +149,41 @@ export default function SeriesPage() {
                         setError(err.message);
                     }
                 } else {
-                    setError("An unknown error occurred");
+                    setError(t('unknown_error'));
                 }
             } finally {
                 setIsLoading(false);
             }
         }
         fetchData();
-    }, [hashed_dir, timeRange]);
+    }, [hashed_dir, timeRange, t]);
 
-    if (isLoading) return <p>Loading chart...</p>;
+    if (isLoading) return <p>{t('series.loading')}</p>;
     if (error) return <p className="text-red-500">{error}</p>;
     if (!points) notFound();
 
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Electricity Consumption</h1>
+                <h1 className="text-2xl font-bold">{t('series.title')}</h1>
                 <div className="flex gap-2">
                     <Button
                         variant={timeRange === "24h" ? "default" : "outline"}
                         onClick={() => setTimeRange("24h")}
                     >
-                        24h
+                        {t('series.24h_button')}
                     </Button>
                     <Button
                         variant={timeRange === "7d" ? "default" : "outline"}
                         onClick={() => setTimeRange("7d")}
                     >
-                        7d
+                        {t('series.7d_button')}
                     </Button>
                     <Button
                         variant={timeRange === "30d" ? "default" : "outline"}
                         onClick={() => setTimeRange("30d")}
                     >
-                        30d
+                        {t('series.30d_button')}
                     </Button>
                 </div>
             </div>
@@ -189,13 +193,13 @@ export default function SeriesPage() {
 
             <SeriesChart
                 data={kwhData}
-                label="Energy"
+                label={t('series.energy_label')}
                 unit="kWh"
                 stroke="#8884d8"
             />
             <SeriesChart
                 data={kwData}
-                label="Power"
+                label={t('series.power_label')}
                 unit="kW"
                 stroke="#e59540ff"
             />
