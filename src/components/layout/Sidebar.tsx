@@ -7,8 +7,8 @@ import { useTranslation } from "react-i18next";
 import { navLinks } from "./links";
 
 export function Sidebar() {
-  const { t, i18n } = useTranslation();
-  const links = navLinks(t, i18n.language);
+  const { t } = useTranslation();
+  const links = navLinks(t);
 
   return (
     <div className="hidden border-r bg-muted/40 md:block">

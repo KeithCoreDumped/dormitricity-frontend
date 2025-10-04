@@ -22,8 +22,8 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Topbar() {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
-  const links = navLinks(t, i18n.language);
+  const { t } = useTranslation();
+  const links = navLinks(t);
 
   function logout() {
     removeToken();

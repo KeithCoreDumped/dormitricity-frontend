@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { apiClient } from "@/lib/apiClient";
 import { Subscription } from "@/lib/types";
 import { SubsCard } from "@/components/subs/SubsCard";
@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchSubs() {
+  const fetchSubs = useCallback(async () => {
     // Don't set loading to true here to avoid flicker when refetching
     setError(null);
     try {
@@ -29,11 +29,11 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     fetchSubs();
-  }, []);
+  }, [fetchSubs]);
 
   if (isLoading) {
     return Loading();
