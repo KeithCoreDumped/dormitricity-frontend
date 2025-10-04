@@ -17,4 +17,16 @@ const nextConfig = {
     },
 };
 
-export default withMDX(nextConfig);
+export default {
+    ...withMDX(nextConfig),
+    async rewrites() {
+        return [
+            {
+                source: "/xapi/:path*",
+                destination:
+                    `${process.env.WORKERS_BASE}/:path*`,
+                basePath: false,
+            },
+        ];
+    },
+};
