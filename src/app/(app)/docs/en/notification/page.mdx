@@ -1,37 +1,54 @@
-# How to Set Up Notifications
 
-Dormitricity supports notifications through various channels to alert you when your electricity balance is low or is estimated to be depleted soon. You can choose from Webhook bots (WeCom, Feishu) or the ServerChan notification API.
+# Notifications Guide
 
-## Configuring Notifications
+Dormitricity's notification system is a powerful tool to help you stay on top of your electricity balance. This guide covers everything from setup and testing to understanding the alert logic.
 
-To set up notifications for a subscription, follow these steps:
+## Configuration Steps
 
-1.  **Open Settings:** On the dashboard, find the subscription card for the dormitory you want to configure. Click the "Settings" button to open the notification settings dialog.
+To configure notifications for a dormitory subscription, follow these steps:
 
-2.  **Choose a Channel:** Select your desired notification channel from the "Notification Channel" dropdown menu. You can choose between "None", "WeCom", "Feishu", and "ServerChan".
+1.  **Open Settings**: On the dashboard, find the subscription card for the dormitory you want to configure. Click the **Settings** button (gear icon) to open the notification settings dialog.
 
-3.  **Provide Your Token or Webhook URL:**
-    *   **Automatic Detection:** You can paste a full Webhook URL directly into the "Notification Token / Webhook URL" field. The system will automatically detect the channel (WeCom, Feishu, or ServerChan) for you.
-    *   **Manual Entry:** If you only have a token or SendKey, you can paste it into the field and then manually select the correct channel from the dropdown.
+2.  **Choose a Channel**: Select your desired notification channel from the dropdown menu.
+    *   **None**: Disables all notifications for this subscription.
+    *   **WeCom (企业微信)**: Sends alerts via a WeCom group bot.
+    *   **Feishu (飞书)**: Sends alerts via a Feishu group bot.
+    *   **ServerChan (Server酱)**: Sends alerts to your personal accounts via the ServerChan service.
 
-4.  **Set Notification Rules:**
-    *   **Low Power Threshold:** Enable this option to receive a notification when your electricity balance falls below a certain level. You can set the threshold in kWh.
-    *   **Depletion Threshold:** Enable this option to be notified when the system estimates that your electricity will run out within a certain number of hours.
+3.  **Provide Token/Webhook URL**: This input is smart and flexible.
+    *   **Paste a Full URL**: If you have a full webhook URL from Feishu or WeCom, just paste it in. The system will automatically extract the necessary token and select the correct channel for you.
+    *   **Paste a Token/Key**: If you have a token (like a ServerChan SendKey or a raw Feishu/WeCom token), paste it in and manually select the corresponding channel.
+    *   The system validates the token/URL format in real-time. An invalid input will be flagged.
 
-5.  **Configure Cooldown:** Choose a cooldown period from the dropdown menu. This is the minimum time that must pass between notifications to prevent you from being spammed.
+4.  **Set Notification Rules**: You can enable one or both of the following rules.
+    *   **Low Power Threshold**: Enable the switch and set a specific `kWh` value. You will receive an alert when your dormitory's balance drops **below** this value.
+    *   **Depletion Threshold**: Enable the switch and set a number of hours. You will receive an alert when the system predicts your electricity will run out in **less than** this amount of time. The prediction is based on your recent power consumption rate.
 
-6.  **Save:** Click the "Save" button to apply your settings.
+5.  **Configure Cooldown**: Choose a cooldown period (e.g., 12, 24, or 48 hours). This prevents you from receiving the same alert too frequently. After an alert is sent, no new alerts for the same rule will be sent until the cooldown period has passed.
 
-## Channel-Specific Instructions
+6.  **Test Your Settings**: Before saving, it's highly recommended to test your configuration.
+    *   Click the **"Test"** button.
+    *   A test message, including the dormitory's `canonical_id`, will be sent to your selected channel.
+    *   A checkmark will appear on the button if the test is successful.
+    *   If it fails, an error message will appear below the token input field (e.g., "Test Failed: Invalid Token").
 
-### WeCom (企业微信)
+7.  **Save**: Once you are satisfied with your settings, click **"Save"**. The settings dialog will close automatically upon a successful save.
 
-Follow the [official WeCom tutorial](https://open.work.weixin.qq.com/help2/pc/14931) to create a bot and get a Webhook URL. Paste the URL into the settings dialog.
+## How Alerts Are Triggered
 
-### Feishu (飞书)
+The backend system checks for potential alerts every time new electricity data is received from the crawler (approximately every 10 minutes).
 
-Similar to WeCom, you can create a bot in a Feishu group to get a Webhook URL. Paste the URL or just the token part into the settings.
+Here’s the logic:
 
-### ServerChan (Server酱)
+1.  **Data Ingestion**: The system receives a new electricity balance reading for a specific dormitory.
+2.  **Rule Check**: It then checks all subscriptions for that dormitory that have notifications enabled.
+3.  **Condition Evaluation**:
+    *   For the **Low Power Threshold**, it checks if `current_balance < threshold_kwh`.
+    *   For the **Depletion Threshold**, it calculates the `estimated_hours_remaining` and checks if `estimated_hours_remaining < within_hours`.
+4.  **Cooldown Check**: Before sending an alert, the system checks the `last_notified_ts` for that specific rule. If the time since the last alert is less than the configured `cooldown_sec`, the alert is suppressed.
+5.  **Dispatch**: If all conditions are met and the cooldown has passed, a notification is sent to your configured channel. The message will be informative, including the dormitory ID, the reason for the alert (e.g., "Low Power Warning"), and the current balance.
 
-[ServerChan](https://sct.ftqq.com/) is a service that allows you to receive notifications through various personal channels. You can get a SendKey and use it as your token.
+## Unsubscribing and Deleting
+
+*   **Unsubscribe**: Inside the settings dialog, you will find an **"Unsubscribe"** button. This will remove the subscription from your dashboard entirely. This action requires confirmation.
+*   **Account Deletion**: To delete your entire account and all associated data, go to the **Account** page from the sidebar.

@@ -28,6 +28,7 @@ import { apiClient } from "@/lib/apiClient";
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { ChannelIcon } from "@/components/subs/ChannelIcon"
 
 const getFormSchema = (t: (key: string) => string) =>
     z
@@ -113,18 +114,6 @@ type NotifySettingProps = {
     sub: Subscription;
     onSuccess: () => void;
     onSubDeleted: () => void;
-};
-
-const ChannelIcon = ({ channel }: { channel: string }) => {
-    const iconMap: Record<string, string> = {
-        wxwork: "/wxwork.svg",
-        feishu: "/feishu.svg",
-        serverchan: "/serverchan.png",
-        none: "/mute.svg",
-    };
-    const src = iconMap[channel];
-    if (!src) return null;
-    return <img src={src} alt={channel} className="w-5 h-5 mr-2" />;
 };
 
 export function NotifySetting({

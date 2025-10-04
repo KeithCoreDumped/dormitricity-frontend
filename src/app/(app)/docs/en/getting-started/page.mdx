@@ -1,21 +1,42 @@
+
 # Getting Started
 
-Welcome to Dormitricity! This service helps you track your dormitory's electricity usage, view trends, and receive timely notifications to avoid running out of power.
+Welcome to Dormitricity! This guide will walk you through the essential features of the service, helping you monitor your dormitory's electricity usage, understand trends, and set up timely alerts.
 
-## How It Works
+## First Steps: Registration and Subscription
 
-Dormitricity works by periodically (every 10 minutes) scraping the electricity balance of subscribed dormitories. This data is then used to provide you with:
+Before you can monitor a dormitory, you need to create an account and add a subscription.
 
-*   Historical data on your electricity balance and power consumption.
-*   Trends and estimates for when your balance might be depleted.
-*   Notifications to remind you to recharge.
+1.  **Create an Account**: Navigate to the [Register](/auth/register) page. You will need to provide a valid email address and a password. After successful registration, you will be automatically logged in and redirected to the dashboard.
 
-## Key Features
+2.  **Add Your First Subscription**:
+    *   On the dashboard, you'll see a large card with a **"+"** icon. Click it to start adding a new subscription.
+    *   The card will transform into an input form. Enter the **Canonical ID** of your dormitory (e.g., `5-202` or `E-505`). This is the unique identifier for your room.
+    *   Click the **"Add"** button. If the ID is valid, a new subscription card will appear on your dashboard.
 
-*   **Dashboard:** Get an at-a-glance view of all your subscribed dormitories.
-*   **Usage Trends:** View detailed charts of your electricity usage over time.
-*   **Notifications:** Set up customizable notifications to be alerted before you run out of power. For more details, see the [Notifications documentation](../notification).
+You can subscribe to a maximum of three dormitories.
 
-## System Architecture
+## Understanding the Dashboard
 
-The system consists of a Python-based crawler, a Cloudflare Worker backend, and a React-based frontend.
+The dashboard provides an at-a-glance overview of all your subscribed dormitories. Each subscription is displayed on its own card.
+
+### Subscription Card Components
+
+*   **Dormitory ID**: The `canonical_id` you used to subscribe.
+*   **Latest Balance**: Shows the most recently recorded electricity balance (`kWh`) and the time of the reading (e.g., "a few seconds ago").
+*   **Notification Status**: A badge indicating the current notification setup (e.g., "Off", "On", or specific rules like "Low Power").
+*   **Action Buttons**:
+    *   **View Trends** (Chart Icon): Takes you to the detailed usage trends page for that dormitory.
+    *   **Settings** (Gear Icon): Opens a dialog to configure or test notification settings.
+
+## Analyzing Usage Trends
+
+The "Trends" page gives you a detailed look at your electricity consumption over time.
+
+*   **Interactive Chart**: The main feature is a line chart plotting your electricity balance (kWh) against time. You can hover over any point on the chart to see the exact balance at a specific time.
+*   **Time Range Selector**: Above the chart, you can select different time ranges to view your usage history, such as the last 24 hours, 7 days, or 30 days.
+*   **Depletion Estimate**: If there is enough data, the page will display an estimated time until your balance runs out, based on your recent consumption rate.
+
+## Next Steps
+
+Now that you understand the basics, learn how to configure alerts to avoid unexpected power outages by reading our [Notifications Guide](../notification).

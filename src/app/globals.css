@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* 👇 加上这行（必须在 @import 之后）：*/
+@plugin "@tailwindcss/typography";
+
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -120,3 +123,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+.markdown-body ul {
+  list-style-type: disc;
+  list-style-position: outside;
+  padding-left: 1.5rem;
+}
+
+.markdown-body ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+  padding-left: 1.5rem;
+}
+

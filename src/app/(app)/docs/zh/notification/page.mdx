@@ -1,32 +1,18 @@
-# 如何设置通知
+import { AlertTriangle, Hourglass, Settings } from "lucide-react";
+import { InlineChannelIcon } from "@/components/subs/ChannelIcon";
+import * as React from "react";
+import { NoticePreview, CodeBlock, RuleTitle } from "@/components/md/NoticePreview"
 
-Dormitricity 支持通过各种渠道发送通知，在您的电费余额较低或预计即将耗尽时提醒您。您可以选择 Webhook 机器人（企业微信、飞书）或 ServerChan 通知 API。
+# 通知配置
 
-## 配置通知
-
-要设置订阅的通知，请按照以下步骤操作：
-
-1.  **打开设置：** 在总览页面，找到您要配置的宿舍订阅卡片。点击"设置"按钮打开通知设置对话框。
-
-2.  **选择渠道：** 从"通知渠道"下拉菜单中选择您想要的通知渠道。您可以选择"无"、"企业微信"、"飞书"和"Server酱"。
-
-3.  **提供您的令牌或 Webhook 链接：**
-    *   **自动检测：** 您可以直接将完整的 Webhook 链接粘贴到"通知令牌 / Webhook 链接"字段中。系统会自动为您检测渠道（企业微信、飞书或 Server酱）。
-    *   **手动输入：** 如果您只有令牌或 SendKey，可以将其粘贴到字段中，然后从下拉菜单中手动选择正确的渠道。
-
-4.  **设置通知规则：**
-    *   **低电量阈值：** 启用此选项，当您的电费余额低于某个水平时接收通知。您可以设置以 kWh 为单位的阈值。
-    *   **耗尽阈值：** 启用此选项，当系统估计您的电量将在指定小时内耗尽时收到通知。
-
-5.  **配置冷却时间：** 从下拉菜单中选择冷却时间。这是通知之间必须经过的最短时间，以防止您收到垃圾邮件。
-
-6.  **保存：** 点击"保存"按钮应用您的设置。
-
-## 渠道特定说明
+## 连接通知应用
 
 ### 企业微信
 
-按照[官方企业微信教程](https://open.work.weixin.qq.com/help2/pc/14931)创建机器人并获取 Webhook 链接。将链接粘贴到设置对话框中。
+1. 创建企业微信群聊
+2. 按照[官方教程](https://open.work.weixin.qq.com/help2/pc/14931)创建机器人并获取 Webhook 链接
+3. 将链接粘贴到设置对话框中
+4. （建议）单击测试按钮，验证配置是否有效
 
 ### 飞书
 
@@ -34,4 +20,59 @@ Dormitricity 支持通过各种渠道发送通知，在您的电费余额较低�
 
 ### Server酱
 
-[Server酱](https://sct.ftqq.com/)是一项服务，允许您通过各种个人渠道接收通知。您可以获取 SendKey 并将其用作您的令牌。
+[Server酱](https://sct.ftqq.com/)是适配多平台多软件的统一推送API服务，您可以获取 SendKey 并将其用作您的令牌。
+
+可以实现以下消息通道的推送：
+
+- 企业微信应用消息：无需安装企业微信客户端，可在微信中直接收到消息，内容显全文
+- 手机客户端：Andorid有官方测试版，iOS 可用 Bark 通道
+- 群机器人：企业微信、钉钉、飞书群
+- 微信服务号和测试号：依赖模板消息接口（微信可能会在某天下线该接口，建议配置多个通道随时切换）
+- 邮件和短信原生不支持，但可以通过自定义通道调用其他云服务来实现
+
+> 相对于企业微信/飞书，Server酱可以无须建群，可直接通过服务号推送到个人微信
+
+## 配置通知
+1. **打开设置**：在仪表盘上，找到您想配置的宿舍的订阅卡片。点击 **设置**
+   <Settings className="h-4 w-4 inline-block align-middle ml-1" /> 以打开通知设置对话框。
+
+2. **选择一个渠道**：从下拉菜单中选择通知渠道。
+   - <InlineChannelIcon channel="none" /> **None (无)**：禁用此订阅的所有通知。
+   - <InlineChannelIcon channel="wxwork" /> **WeCom (企业微信)**：通过企业微信群机器人发送提醒。
+   - <InlineChannelIcon channel="feishu" /> **Feishu (飞书)**：通过飞书群机器人发送提醒。
+   - <InlineChannelIcon channel="serverchan" /> **ServerChan (Server酱)**：将提醒发送到个人账户，或兼容的其他通知通道。
+
+3. **提供令牌 / Webhook URL**  
+   - **粘贴完整 URL**：自动提取令牌并识别渠道。  
+   - **仅粘贴令牌**：请手动选择对应渠道。  
+   - 输入会被实时校验，格式错误将被拒绝。
+
+4. **设置通知规则**
+  - 低电量阈值：当宿舍剩余电量 **低于** 设定的 `kWh` 阈值时触发。
+
+<CodeBlock title="txt">{"Dormitricity: 低电量提醒\n宿舍 ${canonical_id} 当前剩余电量 ${last_kwh} kWh，已低于您设置的 ${threshold_kwh} kWh 阈值。"}</CodeBlock>
+
+- **耗尽时间阈值**：当预测在 **少于** 指定小时数内耗尽时触发（基于最近功率计算）。
+
+<CodeBlock title="txt">
+  {"Dormitricity: 即将耗尽提醒\n宿舍 ${canonical_id} 当前剩余电量 ${last_kwh} kWh，预计将在 ${hours_remaining} 小时内用尽，已低于 ${within_hours} 小时阈值。"}
+</CodeBlock>
+
+5. **冷却时间**：选择 12 / 24 / 48 小时等冷却周期，避免重复。冷却期内相同规则不重复发送。
+
+6. **测试**：点击 **测试**， 系统会发送包含宿舍号的测试消息。
+
+<CodeBlock title="txt">
+  {"Dormitricity 通知测试\n"}
+  {"正在为宿舍 ${canonical_id} 配置提醒。这是一条测试消息，用于验证您的通知配置是否正常工作。"}
+</CodeBlock>
+
+成功则按钮显示对勾；否则提示错误，例如：
+
+<CodeBlock title="txt">
+  测试失败: Notify API error(19001): param invalid: incoming webhook access token invalid
+</CodeBlock>
+
+7. **保存**：确认无误后点击 **保存**。
+
+8. **取消订阅**：设置对话框中点击 **取消订阅**（操作需确认）。  
