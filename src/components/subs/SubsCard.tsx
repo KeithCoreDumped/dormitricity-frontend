@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
     Card,
@@ -57,25 +57,25 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
 
     const notificationStatus = useMemo(() => {
         if (sub.notify_channel === "none") {
-            return { text: t('subs_card.off_status'), active: false };
+            return { text: t("subs_card.off_status"), active: false };
         }
         const activeRules = [];
         if (sub.threshold_kwh > 0) {
-            activeRules.push(t('subs_card.low_power_rule'));
+            activeRules.push(t("subs_card.low_power_rule"));
         }
         if (sub.within_hours > 0) {
-            activeRules.push(t('subs_card.depletion_rule'));
+            activeRules.push(t("subs_card.depletion_rule"));
         }
         if (activeRules.length > 0) {
             return { text: "+" + activeRules.length, active: true };
         }
-        return { text: t('subs_card.on_status'), active: true };
+        return { text: t("subs_card.on_status"), active: true };
     }, [sub.notify_channel, sub.threshold_kwh, sub.within_hours, t]);
 
     // 估计耗尽时间（毫秒时间戳）与显示模式
     const { depleteAtMs, mode } = useMemo(() => {
         // 忽略 last_kw 为 null 或非负
-        if (sub.last_kw == null || sub.last_kw >= 0) {
+        if (!sub.last_kw || !sub.last_kwh || !sub.last_ts || sub.last_kw >= 0) {
             return {
                 depleteAtMs: null as number | null,
                 mode: "none" as const,
@@ -118,9 +118,15 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                 return;
             }
             if (mode === "second") {
-                setCountdown(t('subs_card.before_depletion', { time: formatHMS(left) }));
+                setCountdown(
+                    t("subs_card.before_depletion", { time: formatHMS(left) })
+                );
             } else {
-                setCountdown(t('subs_card.depletes_in', { time: formatDaysHours(left, t) }));
+                setCountdown(
+                    t("subs_card.depletes_in", {
+                        time: formatDaysHours(left, t),
+                    })
+                );
             }
         };
 
@@ -151,11 +157,20 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
         const days = Math.floor(diff / 86400000);
 
         if (minutes < 60) {
-            return t('subs_card.minutes_ago', { count: minutes, s: minutes !== 1 ? 's' : '' });
+            return t("subs_card.minutes_ago", {
+                count: minutes,
+                s: minutes !== 1 ? "s" : "",
+            });
         } else if (hours < 24) {
-            return t('subs_card.hours_ago', { count: hours, s: hours !== 1 ? 's' : '' });
+            return t("subs_card.hours_ago", {
+                count: hours,
+                s: hours !== 1 ? "s" : "",
+            });
         } else if (days < 7) {
-            return t('subs_card.days_ago', { count: days, s: days !== 1 ? 's' : '' });
+            return t("subs_card.days_ago", {
+                count: days,
+                s: days !== 1 ? "s" : "",
+            });
         }
 
         // Fallback: show exact time (24h)
@@ -177,7 +192,11 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                     <div>
                         <CardTitle>{sub.canonical_id}</CardTitle>
                         <CardDescription>
-                            {t('subs_card.last_updated', { time: formatTime(sub.last_ts) })}
+                            {t("subs_card.last_updated", {
+                                time: sub.last_ts
+                                    ? formatTime(sub.last_ts)
+                                    : "-",
+                            })}
                         </CardDescription>
                     </div>
                     <Badge
@@ -193,7 +212,7 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
             </CardHeader>
             <CardContent className="flex-grow">
                 <div className="text-4xl font-bold">
-                    {sub.last_kwh.toFixed(2)} kWh
+                    {sub.last_kwh?.toFixed(2) || "-"} kWh
                 </div>
 
                 <div className="mt-3 min-h-[1.5rem] text-sm text-muted-foreground flex items-center">
@@ -214,7 +233,9 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>{t('subs_card.notify_settings_title')}</DialogTitle>
+                            <DialogTitle>
+                                {t("subs_card.notify_settings_title")}
+                            </DialogTitle>
                         </DialogHeader>
                         <NotifySetting
                             sub={sub}
