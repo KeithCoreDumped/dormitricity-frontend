@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,13 +21,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { NotifyChannel, Subscription } from "@/lib/types";
 import { apiClient } from "@/lib/apiClient";
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { ChannelIcon } from "@/components/subs/ChannelIcon"
+import { ChannelIcon } from "@/components/subs/ChannelIcon";
+import { NotifyThresholdRule } from "./NotifyThresholdRule";
+import { motion, AnimatePresence } from "framer-motion";
 
 const getFormSchema = (t: (key: string) => string) =>
     z
@@ -41,72 +42,29 @@ const getFormSchema = (t: (key: string) => string) =>
             cooldown_sec: z.number(),
         })
         .refine(
-            (data) => {
-                if (data.notify_channel !== "none" && !data.notify_token) {
-                    return false;
-                }
-                return true;
-            },
+            (data) => data.notify_channel === "none" || !!data.notify_token,
             { message: t("notify.token_required"), path: ["notify_token"] }
         )
         .refine(
             (data) => {
-                const { notify_channel, notify_token } = data;
-                if (notify_channel === "none") {
-                    return true;
-                }
-                if (!notify_token) {
-                    return false; // Token is required if channel is not 'none'
-                }
-
+                if (data.notify_channel === "none" || !data.notify_token) return true;
                 const re = {
                     serverchan: /^(SCT[0-9A-Za-z]+)$/,
                     uuid: /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
                 };
-
-                if (notify_channel === "serverchan") {
-                    return re.serverchan.test(notify_token);
-                }
-                if (notify_channel === "wxwork" || notify_channel === "feishu") {
-                    return re.uuid.test(notify_token);
-                }
-
-                return false; // Should not be reached if channel is valid
+                if (data.notify_channel === "serverchan") return re.serverchan.test(data.notify_token);
+                if (data.notify_channel === "wxwork" || data.notify_channel === "feishu") return re.uuid.test(data.notify_token);
+                return false;
             },
-            {
-                message: t("notify.token_invalid"),
-                path: ["notify_token"],
-            }
+            { message: t("notify.token_invalid"), path: ["notify_token"] }
         )
         .refine(
-            (data) => {
-                if (
-                    data.threshold_kwh_enabled &&
-                    (data.threshold_kwh === undefined || data.threshold_kwh <= 0)
-                ) {
-                    return false;
-                }
-                return true;
-            },
-            {
-                message: t("notify.positive_number_error"),
-                path: ["threshold_kwh"],
-            }
+            (data) => !data.threshold_kwh_enabled || (data.threshold_kwh !== undefined && data.threshold_kwh > 0),
+            { message: t("notify.positive_number_error"), path: ["threshold_kwh"] }
         )
         .refine(
-            (data) => {
-                if (
-                    data.within_hours_enabled &&
-                    (data.within_hours === undefined || data.within_hours <= 0)
-                ) {
-                    return false;
-                }
-                return true;
-            },
-            {
-                message: t("notify.positive_number_error"),
-                path: ["within_hours"],
-            }
+            (data) => !data.within_hours_enabled || (data.within_hours !== undefined && data.within_hours > 0),
+            { message: t("notify.positive_number_error"), path: ["within_hours"] }
         );
 
 type NotifySettingProps = {
@@ -115,18 +73,11 @@ type NotifySettingProps = {
     onSubDeleted: () => void;
 };
 
-export function NotifySetting({
-    sub,
-    onSuccess,
-    onSubDeleted,
-}: NotifySettingProps) {
+export function NotifySetting({ sub, onSuccess, onSubDeleted }: NotifySettingProps) {
     const { t } = useTranslation();
     const formSchema = getFormSchema(t);
     const [isTesting, setIsTesting] = useState(false);
-    const [testStatus, setTestStatus] = useState<{
-        ok: boolean;
-        message: string;
-    } | null>(null);
+    const [testStatus, setTestStatus] = useState<{ ok: boolean; message: string } | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -136,29 +87,18 @@ export function NotifySetting({
             notify_channel: sub.notify_channel,
             notify_token: sub.notify_token || "",
             threshold_kwh_enabled: sub.threshold_kwh > 0,
-            threshold_kwh:
-                sub.threshold_kwh > 0 ? sub.threshold_kwh : undefined,
+            threshold_kwh: sub.threshold_kwh > 0 ? sub.threshold_kwh : undefined,
             within_hours_enabled: sub.within_hours > 0,
             within_hours: sub.within_hours > 0 ? sub.within_hours : undefined,
             cooldown_sec: sub.cooldown_sec,
         },
     });
 
-    const {
-        watch,
-        setValue,
-        handleSubmit,
-        control,
-        getValues,
-        trigger, // <-- get trigger from useForm
-        formState: { isValid },
-    } = form;
+    const { watch, setValue, handleSubmit, control, getValues, trigger, formState: { isValid } } = form;
     const notifyChannel = watch("notify_channel");
 
-    // Re-validate token when channel changes
     const isFirstRender = useRef(true);
     useEffect(() => {
-        // Skip validation on the initial render
         if (isFirstRender.current) {
             isFirstRender.current = false;
             return;
@@ -168,7 +108,7 @@ export function NotifySetting({
 
     const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.trim();
-        setTestStatus(null); // Clear test status on new input
+        setTestStatus(null);
 
         let channel: NotifyChannel | null = null;
         let token = value;
@@ -187,39 +127,20 @@ export function NotifySetting({
         const serverchanTokenMatch = value.match(re.serverchan_token);
         const uuidMatch = value.match(re.uuid);
 
-        if (wxworkMatch) {
-            channel = "wxwork";
-            token = wxworkMatch[1];
-        } else if (feishuMatch) {
-            channel = "feishu";
-            token = feishuMatch[1];
-        } else if (serverchanUrlMatch) {
-            channel = "serverchan";
-            token = serverchanUrlMatch[1];
-        } else if (serverchanTokenMatch) {
-            channel = "serverchan";
-            token = serverchanTokenMatch[0];
-        } else if (uuidMatch) {
-            // Pasted a raw UUID token. Default to wxwork, user can change to feishu if needed.
-            channel = "wxwork";
-            token = uuidMatch[0];
-        }
+        if (wxworkMatch) { channel = "wxwork"; token = wxworkMatch[1]; }
+        else if (feishuMatch) { channel = "feishu"; token = feishuMatch[1]; }
+        else if (serverchanUrlMatch) { channel = "serverchan"; token = serverchanUrlMatch[1]; }
+        else if (serverchanTokenMatch) { channel = "serverchan"; token = serverchanTokenMatch[0]; }
+        else if (uuidMatch) { channel = "wxwork"; token = uuidMatch[0]; }
 
-        if (channel) {
-            setValue("notify_channel", channel, { shouldValidate: true });
-        }
-
-        // Update token field, even if no channel was detected
+        if (channel) setValue("notify_channel", channel, { shouldValidate: true });
         setValue("notify_token", token, { shouldValidate: true });
     };
 
     async function onTest() {
         const { notify_channel, notify_token } = getValues();
         if (!notify_token) {
-            setTestStatus({
-                ok: false,
-                message: t("notify.token_required_for_test"),
-            });
+            setTestStatus({ ok: false, message: t("notify.token_required_for_test") });
             return;
         }
 
@@ -227,24 +148,14 @@ export function NotifySetting({
         setTestStatus(null);
 
         try {
-            const result = await apiClient.post("/subs/test-notify", {
-                notify_channel,
-                notify_token,
-                canonical_id: sub.canonical_id,
-            });
-
+            const result = await apiClient.post("/subs/test-notify", { notify_channel, notify_token, canonical_id: sub.canonical_id });
             if (result.ok) {
                 setTestStatus({ ok: true, message: t("notify.test_successful") });
             } else {
-                throw new Error(
-                    result.error || t("notify.test_failed_generic")
-                );
+                throw new Error(result.error || t("notify.test_failed_generic"));
             }
         } catch (err: unknown) {
-            setTestStatus({
-                ok: false,
-                message: (err as Error).message || t("unknown_error"),
-            });
+            setTestStatus({ ok: false, message: (err as Error).message || t("unknown_error") });
         } finally {
             setIsTesting(false);
         }
@@ -256,11 +167,7 @@ export function NotifySetting({
                 await apiClient.delete(`/subs/${sub.hashed_dir}`);
                 onSubDeleted();
             } catch (err) {
-                if (err instanceof Error) {
-                    alert(t("notify.error", { message: err.message }));
-                } else {
-                    alert(t("unknown_error"));
-                }
+                alert((err as Error).message || t("unknown_error"));
             }
         }
     }
@@ -268,9 +175,7 @@ export function NotifySetting({
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const dataToSubmit = {
             ...values,
-            threshold_kwh: values.threshold_kwh_enabled
-                ? values.threshold_kwh
-                : 0,
+            threshold_kwh: values.threshold_kwh_enabled ? values.threshold_kwh : 0,
             within_hours: values.within_hours_enabled ? values.within_hours : 0,
         };
 
@@ -279,11 +184,7 @@ export function NotifySetting({
             await apiClient.put(`/subs/${sub.hashed_dir}`, dataToSubmit);
             onSuccess();
         } catch (err) {
-            if (err instanceof Error) {
-                alert(t("notify.error", { message: err.message }));
-            } else {
-                alert(t("unknown_error"));
-            }
+            alert((err as Error).message || t("unknown_error"));
         } finally {
             setIsSubmitting(false);
         }
@@ -292,310 +193,130 @@ export function NotifySetting({
     return (
         <Form {...form}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                    control={control}
-                    name="notify_channel"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t("notify.channel_label")}</FormLabel>
-                            <Select
-                                onValueChange={(value) => {
-                                    field.onChange(value);
-                                    setTestStatus(null);
-                                }}
-                                value={field.value}
+                <div className="space-y-4">
+                    <FormField
+                        control={control}
+                        name="notify_channel"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>{t("notify.channel_label")}</FormLabel>
+                                <Select onValueChange={(value) => { field.onChange(value); setTestStatus(null); }} value={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={t("notify.select_channel_placeholder")} />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {["none", "wxwork", "feishu", "serverchan"].map(channel => (
+                                            <SelectItem key={channel} value={channel}>
+                                                <div className="flex items-center gap-2">
+                                                    <ChannelIcon channel={channel} className="w-5 h-5" />
+                                                    <span>{t(`notify.${channel}_channel`)}</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <AnimatePresence>
+                        {notifyChannel !== "none" && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="space-y-4 overflow-hidden"
                             >
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue
-                                            placeholder={t(
-                                                "notify.select_channel_placeholder"
-                                            )}
-                                        />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="none">
-                                        <div className="flex items-center">
-                                            <ChannelIcon channel="none" />{" "}
-                                            {t("notify.none_channel")}
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="wxwork">
-                                        <div className="flex items-center">
-                                            <ChannelIcon channel="wxwork" />{" "}
-                                            {t("notify.wecom_channel")}
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="feishu">
-                                        <div className="flex items-center">
-                                            <ChannelIcon channel="feishu" />{" "}
-                                            {t("notify.feishu_channel")}
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="serverchan">
-                                        <div className="flex items-center">
-                                            <ChannelIcon channel="serverchan" />{" "}
-                                            {t("notify.serverchan_channel")}
-                                        </div>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {notifyChannel !== "none" && (
-                    <>
-                        <FormField
-                            control={control}
-                            name="notify_token"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{t("notify.token_label")}</FormLabel>
-                                    <div className="flex items-center space-x-2">
-                                        <FormControl>
-                                            <Input
-                                                placeholder={t(
-                                                    "notify.token_placeholder"
-                                                )}
-                                                {...field}
-                                                onChange={handleTokenChange}
-                                            />
-                                        </FormControl>
-                                        <Button
-                                            type="button"
-                                            onClick={onTest}
-                                            disabled={
-                                                isTesting ||
-                                                !watch("notify_token")
-                                            }
-                                            size="icon"
-                                            variant="outline"
-                                        >
-                                            {isTesting ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : testStatus?.ok ? (
-                                                <Check className="h-4 w-4 text-green-500" />
-                                            ) : (
-                                                <span className="text-sm">
-                                                    {t("notify.test_button")}
-                                                </span>
-                                            )}
-                                        </Button>
-                                    </div>
-                                    {testStatus && !testStatus.ok && (
-                                        <FormDescription className="text-red-500">
-                                            {t("notify.test_failed", {
-                                                message: testStatus.message,
-                                            })}
-                                        </FormDescription>
-                                    )}
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <div className="rounded-lg border p-4 space-y-4">
-                            <FormField
-                                control={control}
-                                name="threshold_kwh_enabled"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>
-                                                {t(
-                                                    "notify.low_power_threshold_label"
-                                                )}
-                                            </FormLabel>
-                                            <FormDescription>
-                                                {t(
-                                                    "notify.low_power_threshold_description"
-                                                )}
-                                            </FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                            {watch("threshold_kwh_enabled") && (
                                 <FormField
                                     control={control}
-                                    name="threshold_kwh"
+                                    name="notify_token"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <div className="relative">
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        placeholder="e.g., 10"
-                                                        {...field}
-                                                        value={
-                                                            field.value ?? ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            field.onChange(
-                                                                e.target
-                                                                    .value ===
-                                                                    ""
-                                                                    ? undefined
-                                                                    : parseFloat(
-                                                                          e
-                                                                              .target
-                                                                              .value
-                                                                      )
-                                                            )
-                                                        }
-                                                    />
-                                                </FormControl>
-                                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-muted-foreground">
-                                                    kWh
-                                                </div>
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
-                        </div>
-
-                        <div className="rounded-lg border p-4 space-y-4">
-                            <FormField
-                                control={control}
-                                name="within_hours_enabled"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>
-                                                {t(
-                                                    "notify.depletion_threshold_label"
-                                                )}
-                                            </FormLabel>
-                                            <FormDescription>
-                                                {t(
-                                                    "notify.depletion_threshold_description"
-                                                )}
-                                            </FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                            {watch("within_hours_enabled") && (
-                                <FormField
-                                    control={control}
-                                    name="within_hours"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <div className="relative">
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        placeholder="e.g., 24"
-                                                        {...field}
-                                                        value={
-                                                            field.value ?? ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            field.onChange(
-                                                                e.target
-                                                                    .value ===
-                                                                    ""
-                                                                    ? undefined
-                                                                    : parseFloat(
-                                                                          e
-                                                                              .target
-                                                                              .value
-                                                                      )
-                                                            )
-                                                        }
-                                                    />
-                                                </FormControl>
-                                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-muted-foreground">
-                                                    hours
-                                                </div>
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
-                        </div>
-
-                        <FormField
-                            control={control}
-                            name="cooldown_sec"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{t("notify.cooldown_label")}</FormLabel>
-                                    <Select
-                                        onValueChange={(value) =>
-                                            field.onChange(parseInt(value, 10))
-                                        }
-                                        defaultValue={String(field.value)}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue
-                                                    placeholder={t(
-                                                        "notify.cooldown_placeholder"
+                                            <FormLabel>{t("notify.token_label")}</FormLabel>
+                                            <div className="flex items-start space-x-2">
+                                                <div className="flex-grow">
+                                                    <FormControl>
+                                                        <Input
+                                                            placeholder={t("notify.token_placeholder")}
+                                                            {...field}
+                                                            onChange={handleTokenChange}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage className="pt-2" />
+                                                    {testStatus && !testStatus.ok && (
+                                                        <p className="text-sm text-destructive pt-2">
+                                                            {t("notify.test_failed", { message: testStatus.message })}
+                                                        </p>
                                                     )}
-                                                />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="43200">
-                                                {t("notify.cooldown_12h")}
-                                            </SelectItem>
-                                            <SelectItem value="64800">
-                                                {t("notify.cooldown_18h")}
-                                            </SelectItem>
-                                            <SelectItem value="86400">
-                                                {t("notify.cooldown_24h")}
-                                            </SelectItem>
-                                            <SelectItem value="172800">
-                                                {t("notify.cooldown_48h")}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </>
-                )}
+                                                </div>
+                                                <Button type="button" onClick={onTest} disabled={isTesting || !watch("notify_token")} variant="outline">
+                                                    {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : 
+                                                     testStatus?.ok ? <Check className="h-4 w-4 text-green-500" /> : 
+                                                     t("notify.test_button")}
+                                                </Button>
+                                            </div>
+                                        </FormItem>
+                                    )}
+                                />
 
-                <div className="flex justify-between">
-                    <Button
-                        type="button"
-                        variant="destructive"
-                        onClick={handleDelete}
-                    >
+                                <NotifyThresholdRule
+                                    enabledName="threshold_kwh_enabled"
+                                    valueName="threshold_kwh"
+                                    labelKey="notify.low_power_threshold_label"
+                                    descriptionKey="notify.low_power_threshold_description"
+                                    placeholder="e.g., 10"
+                                    unit="kWh"
+                                />
+
+                                <NotifyThresholdRule
+                                    enabledName="within_hours_enabled"
+                                    valueName="within_hours"
+                                    labelKey="notify.depletion_threshold_label"
+                                    descriptionKey="notify.depletion_threshold_description"
+                                    placeholder="e.g., 24"
+                                    unit={t("notify.hours_unit")}
+                                />
+
+                                <FormField
+                                    control={control}
+                                    name="cooldown_sec"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{t("notify.cooldown_label")}</FormLabel>
+                                            <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} defaultValue={String(field.value)}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder={t("notify.cooldown_placeholder")} />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="43200">{t("notify.cooldown_12h")}</SelectItem>
+                                                    <SelectItem value="64800">{t("notify.cooldown_18h")}</SelectItem>
+                                                    <SelectItem value="86400">{t("notify.cooldown_24h")}</SelectItem>
+                                                    <SelectItem value="172800">{t("notify.cooldown_48h")}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>{t("notify.cooldown_description")}</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                <div className="flex justify-between pt-4">
+                    <Button type="button" variant="destructive" onClick={handleDelete}>
                         {t("notify.unsubscribe_button")}
                     </Button>
-                    <Button
-                        type="submit"
-                        disabled={
-                            isSubmitting ||
-                            (notifyChannel !== "none" && !isValid)
-                        }
-                    >
-                        {isSubmitting ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            t("notify.save_button")
-                        )}
+                    <Button type="submit" disabled={isSubmitting || (notifyChannel !== "none" && !isValid)}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {t("notify.save_button")}
                     </Button>
                 </div>
             </form>

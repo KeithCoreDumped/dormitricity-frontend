@@ -1,6 +1,7 @@
 import Image from "next/image";
+import clsx from "clsx";
 
-export const ChannelIcon = ({ channel }: { channel: string }) => {
+export const ChannelIcon = ({ channel, className }: { channel: string, className?: string }) => {
     const iconMap: Record<string, string> = {
         wxwork: "/wxwork.svg",
         feishu: "/feishu.svg",
@@ -15,7 +16,7 @@ export const ChannelIcon = ({ channel }: { channel: string }) => {
             alt={channel}
             width={20} // w-5 = 20px
             height={20} // h-5 = 20px
-            className="mr-2"
+            className={clsx("mr-2", className)}
         />
     );
 };

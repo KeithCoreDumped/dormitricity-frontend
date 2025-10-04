@@ -104,7 +104,9 @@
         "unknown_error": "发生未知错误",
         "token_required_for_test": "需要令牌才能发送测试通知。",
         "test_successful": "测试成功！",
-        "test_failed_generic": "发送测试通知失败。"
+        "test_failed_generic": "发送测试通知失败。",
+        "hours_unit": "小时",
+        "cooldown_description": "两次通知之间的冷却时间。"
     },
     "subs_card": {
         "just_now": "刚刚",
@@ -130,7 +132,10 @@
         "loading": "图表加载中...",
         "recharge_in_time": "请及时充电。",
         "depletes_in": "{{time}}内耗尽",
-        "before_depletion": "{{time}}后耗尽"
+        "before_depletion": "{{time}}后耗尽",
+        "no_data_title": "无可用数据",
+        "no_data_subtitle": "所选时间范围内无可用数据。",
+        "time_label": "时间"
     },
     "unknown_error": "发生未知错误"
 }

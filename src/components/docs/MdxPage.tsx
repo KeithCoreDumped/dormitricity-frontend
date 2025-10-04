@@ -18,7 +18,7 @@ const MdxPage: React.FC<MdxPageProps> = ({ docName }) => {
     const loadMdx = async () => {
       setIsLoading(true);
       setError(null);
-      const lang = i18n.language || 'en';
+      const lang = i18n.language || 'zh';
       try {
         // NOTE: The path is relative to the `src` directory, but dynamic import works this way.
         // We can't use a variable that covers the full path.
@@ -28,10 +28,10 @@ const MdxPage: React.FC<MdxPageProps> = ({ docName }) => {
         console.error(`Failed to load doc: ${docName} for lang: ${lang}`, e);
         // Fallback to English if the current language's doc is not found
         try {
-          const mdx = await import(`@/content/docs/en/${docName}.mdx`);
+          const mdx = await import(`@/content/docs/zh/${docName}.mdx`);
           setMdxComponent(() => mdx.default);
         } catch (fallbackError) {
-          console.error(`Failed to load fallback English doc: ${docName}`, fallbackError);
+          console.error(`Failed to load fallback Chinese doc: ${docName}`, fallbackError);
           setError(`Could not load documentation file.`);
         }
       }

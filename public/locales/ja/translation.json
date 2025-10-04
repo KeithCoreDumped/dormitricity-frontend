@@ -104,7 +104,9 @@
         "unknown_error": "不明なエラーが発生しました",
         "token_required_for_test": "テスト通知を送信するにはトークンが必要です。",
         "test_successful": "テストに成功しました！",
-        "test_failed_generic": "テスト通知の送信に失敗しました。"
+        "test_failed_generic": "テスト通知の送信に失敗しました。",
+        "hours_unit": "時間",
+        "cooldown_description": "通知間のクールダウン期間。"
     },
     "subs_card": {
         "just_now": "ちょうど今",
@@ -130,7 +132,10 @@
         "loading": "チャートを読み込み中...",
         "recharge_in_time": "時間内に充電してください。",
         "depletes_in": "{{time}}以内に枯渇",
-        "before_depletion": "枯渇まで{{time}}"
+        "before_depletion": "枯渇まで{{time}}",
+        "no_data_title": "利用可能なデータがありません",
+        "no_data_subtitle": "選択した期間に利用可能なデータがありません。",
+        "time_label": "時間"
     },
     "unknown_error": "不明なエラーが発生しました"
 }

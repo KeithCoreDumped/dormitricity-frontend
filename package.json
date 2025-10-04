@@ -21,6 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.18",
+    "framer-motion": "^12.23.22",
     "github-markdown-css": "^5.8.1",
     "gray-matter": "^4.0.3",
     "i18next": "^25.5.2",

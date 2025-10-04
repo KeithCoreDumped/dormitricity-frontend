@@ -11,10 +11,10 @@ const withMDX = createMDX({
 
 const nextConfig = {
     pageExtensions: ["ts", "tsx", "mdx"],
-    i18n: {
-        locales: ["en", "zh", "ja"],
-        defaultLocale: "en",
-    },
+    // i18n: {
+    //     locales: ["en", "zh", "ja"],
+    //     defaultLocale: "zh",
+    // },
 };
 
 export default {

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
     LineChart,
@@ -9,9 +9,10 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from "recharts";
-
 import dayjs from "dayjs";
 import { Point } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { CustomChartTooltip } from "./CustomChartTooltip";
 
 type SeriesChartProps = {
     data: Point[];
@@ -21,12 +22,14 @@ type SeriesChartProps = {
 };
 
 export function SeriesChart({ data, label, unit, stroke }: SeriesChartProps) {
+    const { t, i18n } = useTranslation();
+
     if (data.length === 0) {
         return (
-            <div className="text-center py-16">
-                <p>No data available for the selected time range.</p>
+            <div className="flex flex-col items-center justify-center h-96 text-center">
+                <p className="text-lg font-medium">{t('series.no_data_title')}</p>
                 <p className="text-sm text-muted-foreground">
-                    The backend automatically pulls kWh data every 10 mins.
+                    {t('series.no_data_subtitle')}
                 </p>
             </div>
         );
@@ -37,79 +40,66 @@ export function SeriesChart({ data, label, unit, stroke }: SeriesChartProps) {
         ts: new Date(point.ts * 1000),
     }));
 
-    let ticks: number[] = [];
-    if (formattedData.length > 0) {
-        const start = dayjs(formattedData[0].ts).startOf("day");
-        const end = dayjs(formattedData[formattedData.length - 1].ts).endOf(
-            "day"
-        );
-
-        const data_begin = dayjs(formattedData[0].ts).valueOf();
-        const data_end = dayjs(
-            formattedData[formattedData.length - 1].ts
-        ).valueOf();
-
-        let current = start;
-        while (current.isBefore(end)) {
-            ticks.push(current.valueOf()); // 0 点
-            ticks.push(current.add(6, "hour").valueOf());
-            ticks.push(current.add(12, "hour").valueOf()); // 12 点
-            ticks.push(current.add(18, "hour").valueOf());
-            current = current.add(1, "day");
-        }
-
-        ticks = ticks.filter((d) => data_begin <= d && data_end >= d);
-    }
+    const timeDomain = [
+        dayjs(formattedData[0].ts).valueOf(),
+        dayjs(formattedData[formattedData.length - 1].ts).valueOf(),
+    ];
 
     return (
-        <ResponsiveContainer width="100%" height={400}>
-            <LineChart
-                data={formattedData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-            >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                    dataKey="ts"
-                    type="number"
-                    scale="time"
-                    ticks={ticks}
-                    tickFormatter={(ts) => dayjs(ts).format("MM/DD HH:mm")}
-                    label={{
-                        value: "Time",
-                        position: "insideBottom",
-                        offset: -5,
-                    }}
-                />
-                <YAxis
-                    label={{
-                        value: `${label} (${unit})`,
-                        angle: -90,
-                        position: "insideLeft",
-                    }}
-                />
-                <Tooltip
-                    labelFormatter={(ts) =>
-                        dayjs(ts).format("YYYY-MM-DD HH:mm:ss")
-                    }
-                    formatter={(value: number) => [
-                        `${value.toFixed(2)} ${unit}`, // 显示值 + 单位
-                        label, // series 名称
-                    ]}
-                    // isAnimationActive={false}
-                    animationDuration={20}
-                />
-                {/* <Legend /> */}
-                <Line
-                    type="monotone"
-                    dataKey="pt"
-                    stroke={stroke}
-                    strokeWidth={2}
-                    dot={false} // no dots
-                    activeDot={{ r: 8 }}
-                    // isAnimationActive={false}
-                    animationDuration={200}
-                />
-            </LineChart>
-        </ResponsiveContainer>
+        <div className="h-96 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                    data={formattedData}
+                    margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={true} />
+                    <XAxis
+                        dataKey="ts"
+                        type="number"
+                        scale="time"
+                        domain={timeDomain}
+                        tickFormatter={(ts) => dayjs(ts).locale(i18n.language).format("MM/DD HH:mm")}
+                        stroke="hsl(var(--muted-foreground))"
+                        tickLine={{ stroke: "hsl(var(--muted-foreground))" }}
+                        axisLine={{ stroke: "hsl(var(--muted-foreground))" }}
+                        label={{
+                            value: t('series.time_label'),
+                            position: "insideBottom",
+                            offset: -15,
+                            fill: "hsl(var(--muted-foreground))",
+                            fontSize: 12,
+                        }}
+                    />
+                    <YAxis
+                        domain={['dataMin', 'dataMax']}
+                        tickFormatter={(value) => value.toFixed(2)}
+                        stroke="hsl(var(--muted-foreground))"
+                        tickLine={{ stroke: "hsl(var(--muted-foreground))" }}
+                        axisLine={{ stroke: "hsl(var(--muted-foreground))" }}
+                        label={{
+                            value: `${label} (${unit})`,
+                            angle: -90,
+                            position: "insideLeft",
+                            fill: "hsl(var(--muted-foreground))",
+                            fontSize: 12,
+                        }}
+                    />
+                    <Tooltip
+                        content={<CustomChartTooltip unit={unit} seriesLabel={label} />}
+                        animationDuration={200}
+                        animationEasing="ease-in-out"
+                    />
+                    <Line
+                        type="monotone"
+                        dataKey="pt"
+                        stroke={stroke}
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 6, fill: stroke, stroke: "hsl(var(--background))", strokeWidth: 2 }}
+                        animationDuration={500}
+                    />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
     );
 }

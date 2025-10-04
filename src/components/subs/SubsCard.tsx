@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Settings, LineChart } from "lucide-react";
 import { formatHMS, formatDaysHours } from "@/lib/format";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 
 import {
     Dialog,
@@ -67,27 +68,20 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
             activeRules.push(t("subs_card.depletion_rule"));
         }
         if (activeRules.length > 0) {
-            return { text: "+" + activeRules.length, active: true };
+            return { text: `+${activeRules.length}`, active: true };
         }
         return { text: t("subs_card.on_status"), active: true };
     }, [sub.notify_channel, sub.threshold_kwh, sub.within_hours, t]);
 
-    // 估计耗尽时间（毫秒时间戳）与显示模式
-    const { depleteAtMs, mode } = useMemo(() => {
-        // 忽略 last_kw 为 null 或非负
+    const { depleteAtMs, mode }: { depleteAtMs: number | null; mode: "none" | "second" | "hour" } = useMemo(() => {
         if (!sub.last_kw || !sub.last_kwh || !sub.last_ts || sub.last_kw >= 0) {
-            return {
-                depleteAtMs: null as number | null,
-                mode: "none" as const,
-            };
+            return { depleteAtMs: null, mode: "none" as const };
         }
-        // 估算小时：kWh / kW
-        const hoursToZero = sub.last_kwh / -sub.last_kw; // 可能为小数
+        const hoursToZero = sub.last_kwh / -sub.last_kw;
         if (!isFinite(hoursToZero) || hoursToZero <= 0) {
             return { depleteAtMs: null, mode: "none" as const };
         }
-        const depleteAtSec = sub.last_ts + hoursToZero * 3600;
-        const depleteAtMs = depleteAtSec * 1000;
+        const depleteAtMs = (sub.last_ts + hoursToZero * 3600) * 1000;
         const nowMs = Date.now();
         const delta = depleteAtMs - nowMs;
 
@@ -101,7 +95,6 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
         return { depleteAtMs: null, mode: "none" as const };
     }, [sub.last_kw, sub.last_kwh, sub.last_ts]);
 
-    // countdown text
     const [countdown, setCountdown] = useState<string | null>(null);
 
     useEffect(() => {
@@ -111,8 +104,7 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
         }
 
         const tick = () => {
-            const now = Date.now();
-            const left = depleteAtMs - now;
+            const left = depleteAtMs - Date.now();
             if (left <= 0) {
                 setCountdown(null);
                 return;
@@ -131,9 +123,7 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
         };
 
         tick();
-
-        // set interval
-        const interval = mode === "second" ? 1000 : 60 * 60 * 1000; // every second/every hour
+        const interval = mode === "second" ? 1000 : 60 * 60 * 1000;
         const id = setInterval(tick, interval);
         return () => clearInterval(id);
     }, [depleteAtMs, mode, t]);
@@ -149,9 +139,7 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
     }
 
     function formatTime(ts: number): string {
-        const now = Date.now();
-        const diff = now - ts * 1000; // ts is in seconds → ms
-
+        const diff = Date.now() - ts * 1000;
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
@@ -159,7 +147,7 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
         if (minutes < 60) {
             return t("subs_card.minutes_ago", {
                 count: minutes,
-                s: minutes !== 1 ? "s" : "",
+                s: minutes !== 1 ? "s" : "", // plural form
             });
         } else if (hours < 24) {
             return t("subs_card.hours_ago", {
@@ -172,84 +160,78 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                 s: days !== 1 ? "s" : "",
             });
         }
-
-        // Fallback: show exact time (24h)
-        return new Date(ts * 1000).toLocaleString(undefined, {
-            hour12: false,
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-        });
+        return new Date(ts * 1000).toLocaleDateString();
     }
 
     return (
-        <Card className="flex flex-col">
-            <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle>{sub.canonical_id}</CardTitle>
-                        <CardDescription>
-                            {t("subs_card.last_updated", {
-                                time: sub.last_ts
-                                    ? formatTime(sub.last_ts)
-                                    : "-",
-                            })}
-                        </CardDescription>
+        <motion.div
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
+            <Card className="flex flex-col h-full overflow-hidden" >
+                <CardHeader>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle className="text-xl font-bold">{sub.canonical_id}</CardTitle>
+                            <CardDescription>
+                                {t("subs_card.last_updated", {
+                                    time: sub.last_ts
+                                        ? formatTime(sub.last_ts)
+                                        : t("subs_card.never_updated"),
+                                })}
+                            </CardDescription>
+                        </div>
+                        <Badge
+                            variant={notificationStatus.active ? "default" : "outline"}
+                            className="flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                        >
+                            <ChannelIcon channel={sub.notify_channel} />
+                            <span>{notificationStatus.text}</span>
+                        </Badge>
                     </div>
-                    <Badge
-                        variant={
-                            notificationStatus.active ? "default" : "outline"
-                        }
-                        className="flex items-center gap-1.5 whitespace-nowrap"
-                    >
-                        <ChannelIcon channel={sub.notify_channel} />
-                        <span>{notificationStatus.text}</span>
-                    </Badge>
-                </div>
-            </CardHeader>
-            <CardContent className="flex-grow">
-                <div className="text-4xl font-bold">
-                    {sub.last_kwh?.toFixed(2) || "-"} kWh
-                </div>
+                </CardHeader>
+                <CardContent className="flex-grow flex flex-col justify-center items-center text-center">
+                    <div className="text-5xl font-extrabold tracking-tighter">
+                        {sub.last_kwh?.toFixed(2) ?? "-"}
+                        <span className="text-2xl font-medium text-muted-foreground ml-1">kWh</span>
+                    </div>
 
-                <div className="mt-3 min-h-[1.5rem] text-sm text-muted-foreground flex items-center">
-                    {countdown && (
-                        <>
-                            <AlertTriangle className="w-4 h-4 mr-1 text-yellow-500" />
-                            {countdown}
-                        </>
-                    )}
-                </div>
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-                <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" size="icon">
-                            <Settings className="h-4 w-4" />
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>
-                                {t("subs_card.notify_settings_title")}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <NotifySetting
-                            sub={sub}
-                            onSuccess={handleSuccess}
-                            onSubDeleted={handleSubDeleted}
-                        />
-                    </DialogContent>
-                </Dialog>
-                <Button variant="outline" size="icon" asChild>
-                    <Link href={`/series/${sub.hashed_dir}`}>
-                        <LineChart className="h-4 w-4" />
-                    </Link>
-                </Button>
-            </CardFooter>
-        </Card>
+                    <div className="mt-3 min-h-[2rem] text-sm text-muted-foreground flex items-center justify-center">
+                        {countdown && (
+                            <div className="flex items-center text-yellow-600 dark:text-yellow-400">
+                                <AlertTriangle className="w-4 h-4 mr-1.5" />
+                                <span className="font-medium">{countdown}</span>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2 bg-muted/30 p-3">
+                    <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <Settings className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>
+                                    {t("subs_card.notify_settings_title")}
+                                </DialogTitle>
+                            </DialogHeader>
+                            <NotifySetting
+                                sub={sub}
+                                onSuccess={handleSuccess}
+                                onSubDeleted={handleSubDeleted}
+                            />
+                        </DialogContent>
+                    </Dialog>
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/series/${sub.hashed_dir}`}>
+                            <LineChart className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                </CardFooter>
+            </Card>
+        </motion.div>
     );
 }

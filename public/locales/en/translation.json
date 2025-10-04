@@ -108,7 +108,9 @@
         "unknown_error": "An unknown error occurred",
         "token_required_for_test": "Token is required to send a test notification.",
         "test_successful": "Test successful!",
-        "test_failed_generic": "Failed to send test notification."
+        "test_failed_generic": "Failed to send test notification.",
+        "hours_unit": "hours",
+        "cooldown_description": "The cooldown period between notifications."
     },
     "subs_card": {
         "just_now": "just now",
@@ -134,7 +136,10 @@
         "loading": "Loading chart...",
         "recharge_in_time": "Please recharge in time.",
         "depletes_in": "Depletes in {{time}}",
-        "before_depletion": "{{time}} before depletion"
+        "before_depletion": "{{time}} before depletion",
+        "no_data_title": "No data available",
+        "no_data_subtitle": "No data available for the selected time range.",
+        "time_label": "Time"
     },
     "unknown_error": "An unknown error occurred"
 }

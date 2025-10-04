@@ -5,8 +5,9 @@ import { apiClient } from "@/lib/apiClient";
 import { Subscription } from "@/lib/types";
 import { SubsCard } from "@/components/subs/SubsCard";
 import { AddSubCard } from "@/components/subs/AddSubCard";
-import Loading from "./loading";
+import { SubsListSkeleton } from "@/components/subs/SubsListSkeleton";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -15,7 +16,6 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchSubs = useCallback(async () => {
-    // Don't set loading to true here to avoid flicker when refetching
     setError(null);
     try {
       const data = await apiClient.get("/subs");
@@ -29,28 +29,52 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchSubs();
   }, [fetchSubs]);
 
   if (isLoading) {
-    return Loading();
+    return <SubsListSkeleton />;
   }
 
   if (error) {
     return <p className="text-red-500">{error}</p>;
   }
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {subs.map((sub) => (
-        <SubsCard key={sub.hashed_dir} sub={sub} onSubDeleted={fetchSubs} onChanged={fetchSubs} />
+    <motion.div 
+      className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        visible: {
+          transition: {
+            staggerChildren: 0.1,
+          },
+        },
+      }}
+    >
+      {subs.map((sub, index) => (
+        <motion.div key={sub.hashed_dir} variants={cardVariants}>
+          <SubsCard 
+            sub={sub} 
+            onSubDeleted={fetchSubs} 
+            onChanged={fetchSubs}
+          />
+        </motion.div>
       ))}
       {subs.length < 3 && (
-        <AddSubCard onSubAdded={fetchSubs} />
+        <motion.div variants={cardVariants}>
+          <AddSubCard onSubAdded={fetchSubs} />
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

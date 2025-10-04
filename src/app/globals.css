@@ -44,6 +44,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --color-kwh: var(--chart-1);
+  --color-kw: var(--chart-2);
 }
 
 :root {
@@ -113,6 +115,8 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --color-kwh: var(--chart-3);
+  --color-kw: var(--chart-5);
 }
 
 @layer base {
