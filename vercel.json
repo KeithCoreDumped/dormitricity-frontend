@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
+      "source": "/xapi/:path*",
       "destination": "https://dormitricity-worker.kcd049.workers.dev/:path*"
     }
   ]
