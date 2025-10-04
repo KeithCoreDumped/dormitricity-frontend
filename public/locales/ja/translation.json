@@ -4,7 +4,8 @@
         "account": "アカウント管理",
         "docs": "ドキュメント",
         "getting_started": "開始",
-        "notification": "通知設定"
+        "notification": "通知設定",
+        "about": "概要"
     },
     "topbar": {
         "toggle_nav": "ナビゲーションメニューを切り替え",

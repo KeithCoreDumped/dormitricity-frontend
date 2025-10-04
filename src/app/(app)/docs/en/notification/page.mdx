@@ -1,54 +1,83 @@
+---
+title: Notification Configuration
+description: How to set up and configure real-time notifications.
+---
 
-# Notifications Guide
+import { AlertTriangle, Hourglass, Settings } from "lucide-react";
+import { InlineChannelIcon } from "@/components/subs/ChannelIcon";
+import * as React from "react";
+import { NoticePreview, CodeBlock, RuleTitle } from "@/components/md/NoticePreview"
 
-Dormitricity's notification system is a powerful tool to help you stay on top of your electricity balance. This guide covers everything from setup and testing to understanding the alert logic.
+# Notification Configuration
 
-## Configuration Steps
+## Connecting Notification Apps
 
-To configure notifications for a dormitory subscription, follow these steps:
+### WeCom (Enterprise WeChat)
 
-1.  **Open Settings**: On the dashboard, find the subscription card for the dormitory you want to configure. Click the **Settings** button (gear icon) to open the notification settings dialog.
+1.  Create a WeCom group chat.
+2.  Follow the [official tutorial](https://open.work.weixin.qq.com/help2/pc/14931) to create a bot and get its Webhook URL.
+3.  Paste the URL into the settings dialog.
+4.  (Recommended) Click the test button to verify that the configuration is valid.
 
-2.  **Choose a Channel**: Select your desired notification channel from the dropdown menu.
-    *   **None**: Disables all notifications for this subscription.
-    *   **WeCom (企业微信)**: Sends alerts via a WeCom group bot.
-    *   **Feishu (飞书)**: Sends alerts via a Feishu group bot.
-    *   **ServerChan (Server酱)**: Sends alerts to your personal accounts via the ServerChan service.
+### Feishu
 
-3.  **Provide Token/Webhook URL**: This input is smart and flexible.
-    *   **Paste a Full URL**: If you have a full webhook URL from Feishu or WeCom, just paste it in. The system will automatically extract the necessary token and select the correct channel for you.
-    *   **Paste a Token/Key**: If you have a token (like a ServerChan SendKey or a raw Feishu/WeCom token), paste it in and manually select the corresponding channel.
-    *   The system validates the token/URL format in real-time. An invalid input will be flagged.
+Similar to WeCom, you can create a bot in a Feishu group to get a Webhook URL. Paste the URL or just the token part into the settings.
 
-4.  **Set Notification Rules**: You can enable one or both of the following rules.
-    *   **Low Power Threshold**: Enable the switch and set a specific `kWh` value. You will receive an alert when your dormitory's balance drops **below** this value.
-    *   **Depletion Threshold**: Enable the switch and set a number of hours. You will receive an alert when the system predicts your electricity will run out in **less than** this amount of time. The prediction is based on your recent power consumption rate.
+### ServerChan
 
-5.  **Configure Cooldown**: Choose a cooldown period (e.g., 12, 24, or 48 hours). This prevents you from receiving the same alert too frequently. After an alert is sent, no new alerts for the same rule will be sent until the cooldown period has passed.
+[ServerChan](https://sct.ftqq.com/) is a unified push notification API service that adapts to multiple platforms and software. You can obtain a SendKey and use it as your token.
 
-6.  **Test Your Settings**: Before saving, it's highly recommended to test your configuration.
-    *   Click the **"Test"** button.
-    *   A test message, including the dormitory's `canonical_id`, will be sent to your selected channel.
-    *   A checkmark will appear on the button if the test is successful.
-    *   If it fails, an error message will appear below the token input field (e.g., "Test Failed: Invalid Token").
+It can push messages through the following channels:
 
-7.  **Save**: Once you are satisfied with your settings, click **"Save"**. The settings dialog will close automatically upon a successful save.
+-   WeCom App Messages: Receive messages directly in WeChat without installing the WeCom client, with full content displayed.
+-   Mobile Client: An official beta version is available for Android, and the Bark channel can be used for iOS.
+-   Group Bots: WeCom, DingTalk, and Feishu groups.
+-   WeChat Official/Test Accounts: Relies on the template message interface (WeChat may deprecate this interface someday, so it's advisable to configure multiple channels for easy switching).
+-   Email and SMS are not natively supported but can be implemented by calling other cloud services through custom channels.
 
-## How Alerts Are Triggered
+> Compared to WeCom/Feishu, ServerChan can push notifications to your personal WeChat via an official account without needing to create a group.
 
-The backend system checks for potential alerts every time new electricity data is received from the crawler (approximately every 10 minutes).
+## Configuring Notifications
 
-Here’s the logic:
+1.  **Open Settings**: On the dashboard, find the subscription card for the dorm you want to configure. Click the **Settings** <Settings className="h-4 w-4 inline-block align-middle ml-1" /> button to open the notification settings dialog.
 
-1.  **Data Ingestion**: The system receives a new electricity balance reading for a specific dormitory.
-2.  **Rule Check**: It then checks all subscriptions for that dormitory that have notifications enabled.
-3.  **Condition Evaluation**:
-    *   For the **Low Power Threshold**, it checks if `current_balance < threshold_kwh`.
-    *   For the **Depletion Threshold**, it calculates the `estimated_hours_remaining` and checks if `estimated_hours_remaining < within_hours`.
-4.  **Cooldown Check**: Before sending an alert, the system checks the `last_notified_ts` for that specific rule. If the time since the last alert is less than the configured `cooldown_sec`, the alert is suppressed.
-5.  **Dispatch**: If all conditions are met and the cooldown has passed, a notification is sent to your configured channel. The message will be informative, including the dormitory ID, the reason for the alert (e.g., "Low Power Warning"), and the current balance.
+2.  **Select a Channel**: Choose a notification channel from the dropdown menu.
+    -   <InlineChannelIcon channel="none" /> **None**: Disables all notifications for this subscription.
+    -   <InlineChannelIcon channel="wxwork" /> **WeCom**: Sends alerts via a WeCom group bot.
+    -   <InlineChannelIcon channel="feishu" /> **Feishu**: Sends alerts via a Feishu group bot.
+    -   <InlineChannelIcon channel="serverchan" /> **ServerChan**: Sends alerts to your personal account or other compatible notification channels.
 
-## Unsubscribing and Deleting
+3.  **Provide Token / Webhook URL**
+    -   **Paste Full URL**: Automatically extracts the token and identifies the channel.
+    -   **Paste Token Only**: Please select the corresponding channel manually.
+    -   The input is validated in real-time, and incorrect formats will be rejected.
 
-*   **Unsubscribe**: Inside the settings dialog, you will find an **"Unsubscribe"** button. This will remove the subscription from your dashboard entirely. This action requires confirmation.
-*   **Account Deletion**: To delete your entire account and all associated data, go to the **Account** page from the sidebar.
+4.  **Set Notification Rules**
+    -   **Low Power Threshold**: Triggers when the dorm's remaining electricity falls **below** the set `kWh` threshold.
+
+<CodeBlock title="txt">{"Dormitricity: Low Power Alert\nDorm ${canonical_id} has ${last_kwh} kWh remaining, which is below your threshold of ${threshold_kwh} kWh."}</CodeBlock>
+
+    -   **Depletion Time Threshold**: Triggers when the power is predicted to run out in **less than** the specified number of hours (calculated based on recent power consumption).
+
+<CodeBlock title="txt">
+  {"Dormitricity: Imminent Depletion Alert\nDorm ${canonical_id} has ${last_kwh} kWh remaining and is expected to run out in ${hours_remaining} hours, which is below your ${within_hours}-hour threshold."}
+</CodeBlock>
+
+5.  **Cooldown Period**: Choose a cooldown period like 12 / 24 / 48 hours to avoid duplicate messages. The same rule will not trigger again during the cooldown period.
+
+6.  **Test**: Click **Test**, and the system will send a test message containing the dormitory ID.
+
+<CodeBlock title="txt">
+  {"Dormitricity Notification Test\n"}
+  {"You are setting up notifications for dorm ${canonical_id}. This is a test message to verify that your notification configuration is working correctly."}
+</CodeBlock>
+
+    If successful, a checkmark will appear on the button; otherwise, an error will be displayed, for example:
+
+<CodeBlock title="txt">
+  Test Failed: Notify API error(19001): param invalid: incoming webhook access token invalid
+</CodeBlock>
+
+7.  **Save**: After confirming your settings, click **Save**.
+
+8.  **Unsubscribe**: In the settings dialog, click **Unsubscribe** (this action requires confirmation).

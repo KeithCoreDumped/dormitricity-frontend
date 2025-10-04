@@ -1,42 +1,50 @@
+---
+title: Getting Started
+description: A guide to the basic features of Dormitricity.
+---
+
+import { AlertTriangle, Settings, LineChart } from "lucide-react";
 
 # Getting Started
 
-Welcome to Dormitricity! This guide will walk you through the essential features of the service, helping you monitor your dormitory's electricity usage, understand trends, and set up timely alerts.
+Welcome to Dormitricity! This guide will walk you through the basic features of the service, helping you monitor your dorm's electricity usage, understand trends, and set up timely alerts.
 
-## First Steps: Registration and Subscription
+## Registration and Subscription
 
 Before you can monitor a dormitory, you need to create an account and add a subscription.
 
-1.  **Create an Account**: Navigate to the [Register](/auth/register) page. You will need to provide a valid email address and a password. After successful registration, you will be automatically logged in and redirected to the dashboard.
+1.  **Create an Account**: Visit the [Sign Up](/auth/register) page. You will need to provide a valid email address and a password. After successful registration, you will be automatically logged in and redirected to the dashboard.
 
 2.  **Add Your First Subscription**:
-    *   On the dashboard, you'll see a large card with a **"+"** icon. Click it to start adding a new subscription.
-    *   The card will transform into an input form. Enter the **Canonical ID** of your dormitory (e.g., `5-202` or `E-505`). This is the unique identifier for your room.
+    *   On the dashboard, click the "+" card to start adding a new subscription.
+    *   The card will transform into an input form. Enter the dormitory ID (e.g., `5-202` or `E-505`). This is the unique identifier for your room.
+    *   Currently, Dormitricity supports all dormitories at the main campus and Shahe campus whose electricity balance can be checked via a web page. If the remaining balance for your dorm does not appear on the main page 24 hours after setting up the subscription, please [open an issue](https://github.com/KeithCoreDumped/dormitricity-crawler/issues/new) in the crawler repository.
     *   Click the **"Add"** button. If the ID is valid, a new subscription card will appear on your dashboard.
 
 You can subscribe to a maximum of three dormitories.
 
 ## Understanding the Dashboard
 
-The dashboard provides an at-a-glance overview of all your subscribed dormitories. Each subscription is displayed on its own card.
+The dashboard provides an overview of all your subscribed dormitories. Each subscription is displayed on its own card.
 
 ### Subscription Card Components
 
-*   **Dormitory ID**: The `canonical_id` you used to subscribe.
-*   **Latest Balance**: Shows the most recently recorded electricity balance (`kWh`) and the time of the reading (e.g., "a few seconds ago").
-*   **Notification Status**: A badge indicating the current notification setup (e.g., "Off", "On", or specific rules like "Low Power").
-*   **Action Buttons**:
-    *   **View Trends** (Chart Icon): Takes you to the detailed usage trends page for that dormitory.
-    *   **Settings** (Gear Icon): Opens a dialog to configure or test notification settings.
+*   **Dormitory ID**
+*   **Latest Balance**: Shows the most recently recorded electricity balance (`kWh`) and the time of the update (typically updated every 10 minutes).
+*   **Notification Status**: Indicates whether notifications are enabled for the current subscription and how many rules are active.
+*   **View Trends** <LineChart className="h-4 w-4 inline-block align-text-bottom ml-1" /> button: Takes you to the electricity usage trend chart page.
+*   **Settings** <Settings className="h-4 w-4 inline-block align-middle ml-1" /> button: Configure or test notification settings.
+*   **Depletion Estimate**: If the electricity is about to run out, the page will display an estimated time until depletion based on your recent consumption rate.
 
 ## Analyzing Usage Trends
 
-The "Trends" page gives you a detailed look at your electricity consumption over time.
+The "Trends" page allows you to get a detailed look at your electricity consumption.
 
-*   **Interactive Chart**: The main feature is a line chart plotting your electricity balance (kWh) against time. You can hover over any point on the chart to see the exact balance at a specific time.
-*   **Time Range Selector**: Above the chart, you can select different time ranges to view your usage history, such as the last 24 hours, 7 days, or 30 days.
-*   **Depletion Estimate**: If there is enough data, the page will display an estimated time until your balance runs out, based on your recent consumption rate.
+*   **Time Range Selection**: Above the chart, select different time ranges to view your usage history, such as the last 24 hours, 7 days, or 30 days.
+*   **Interactive Chart**: The first line chart plots the dormitory's electricity balance (kWh) over time. You can hover over any point on the chart to see the exact balance at a specific time.
+*   **Power Estimation**: The second chart shows the historical power consumption (kW) estimated from the remaining electricity balance. You can hover over any point to see the estimated power at a specific time.
+*   **Depletion Estimate**: If the electricity is about to run out, the page will display an estimated time until depletion based on your recent consumption rate.
 
 ## Next Steps
 
-Now that you understand the basics, learn how to configure alerts to avoid unexpected power outages by reading our [Notifications Guide](../notification).
+Now that you understand the basics, read our [Notification Guide](/docs/en/notification) to learn how to configure alerts to avoid unexpected power outages.

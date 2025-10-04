@@ -13,6 +13,7 @@ export const navLinks = (
         subLinks: [
             { href: `/docs/${currentLang}/getting-started`, label: t('sidebar.getting_started') },
             { href: `/docs/${currentLang}/notification`, label: t('sidebar.notification') },
+            { href: `/docs/${currentLang}/about`, label: t('sidebar.about') },
         ],
     },
 ];

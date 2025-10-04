@@ -1,0 +1,48 @@
+# 关于项目架构
+
+Dormitricity 被设计为一个现代化的分布式系统，旨在提供可靠、实时的电量监控服务。该项目由三个独立且解耦的组件协同工作而成。
+
+{/* ```mermaid
+graph TD
+    A[用户] <--> B(前端);
+    B <--> C{后端 Worker};
+    C --> D[爬虫];
+``` */}
+
+### 1. 前端 (Frontend)
+
+前端是主要面向用户的组件，为所有用户交互提供了响应式和直观的界面。
+
+-   **技术栈**: 使用 **Next.js**、**React** 和 **TypeScript** 构建。采用 **Tailwind CSS** 和 **shadcn/ui** 进行样式设计。
+-   **角色**: 负责处理用户注册、登录、仪表盘可视化以及通知设置的配置。它是一个纯粹的客户端应用程序，完全依赖于后端 Worker 提供数据和业务逻辑。
+-   **交互**: 它仅通过安全的 REST API 与后端 Worker 进行通信。
+
+### 2. 后端 Worker
+
+Worker 是项目的中央系统。它是一个在 Cloudflare 网络上运行的无服务器后端，因此速度快且可扩展。
+
+-   **技术栈**: 使用 **TypeScript** 编写的 **Cloudflare Worker**，并使用 **Cloudflare D1** SQLite 数据库进行存储。
+-   **角色**: 它是唯一的“事实来源 (source of truth)”。它管理数据库，处理所有业务逻辑（用户认证、订阅、通知规则），并为前端提供 API 服务。最关键的是，它还扮演着爬虫的**协调器**角色。
+-   **交互**: 它响应来自前端的 API 调用，并在需要获取新数据时通过调度 GitHub Actions 工作流来触发爬虫。
+
+### 3. 爬虫 (Crawler)
+
+爬虫是一个专门的、无状态的数据抓取代理，负责从网站上抓取电量数据。
+
+-   **技术栈**: 使用 **Python** 语言，依赖 **Selenium** 和 **Requests** 库。
+-   **角色**: 其唯一目的是获取原始电量数据。它以基于任务的模式运行，从 Worker 处“认领”一批宿舍进行查询。
+-   **交互**: 它由 Worker 按需触发。一旦被激活，它会认领一个任务，抓取必要的数据，然后将结果提交回 Worker 的数据接收端点进行处理和存储。
+
+这种解耦的架构确保了系统的每个部分都是专业化、可扩展的，并且可以独立开发和维护。
+
+## 源代码与贡献
+
+整个项目是开源的。您可以在 GitHub 上查看每个组件的源代码：
+
+-   [**前端仓库**](https://github.com/KeithCoreDumped/dormitricity-frontend)
+-   [**后端 Worker 仓库**](https://github.com/KeithCoreDumped/dormitricity-worker)
+-   [**爬虫仓库**](https://github.com/KeithCoreDumped/dormitricity-crawler)
+
+您可以在 [爬虫的 GitHub Actions 页面](https://github.com/KeithCoreDumped/dormitricity-crawler/actions) 监控数据收集任务的运行状态。
+
+我们欢迎任何反馈或错误报告。如果您遇到任何问题，请随时 [提交 Issue](https://github.com/KeithCoreDumped/dormitricity-frontend/issues)。

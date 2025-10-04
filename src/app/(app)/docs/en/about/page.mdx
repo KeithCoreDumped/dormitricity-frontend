@@ -1,0 +1,53 @@
+---
+title: About the Project Architecture
+description: An overview of the technical architecture of the Dormitricity project.
+---
+
+# About the Project Architecture
+
+Dormitricity is designed as a modern, distributed system to provide a reliable and real-time electricity monitoring service. The project is composed of three distinct, decoupled components that work in concert.
+
+{/* ```mermaid
+graph TD
+    A[User] <--> B(Frontend);
+    B <--> C{Worker};
+    C --> D[Crawler];
+``` */}
+
+### 1. Frontend
+
+The frontend is the primary user-facing component, providing a responsive and intuitive interface for all user interactions.
+
+-   **Technology**: Built with **Next.js**, **React**, and **TypeScript**. Styled with **Tailwind CSS** and **shadcn/ui**.
+-   **Role**: It handles user registration, login, dashboard visualization, and the configuration of notification settings. It is a pure client application that relies entirely on the worker for data and business logic.
+-   **Interaction**: It communicates exclusively with the Worker via a secure REST API.
+
+### 2. Worker
+
+The worker is the central system of the project. It's a serverless backend that runs on the Cloudflare network, making it fast and scalable.
+
+-   **Technology**: A **Cloudflare Worker** written in **TypeScript**, using a **Cloudflare D1** SQLite database for storage.
+-   **Role**: It serves as the single source of truth. It manages the database, handles all business logic (user authentication, subscriptions, notification rules), and serves the API for the frontend. Crucially, it also acts as the **orchestrator** for the crawler.
+-   **Interaction**: It responds to API calls from the frontend and triggers the crawler by dispatching a GitHub Actions workflow when new data needs to be fetched.
+
+### 3. Crawler
+
+The crawler is a specialized, stateless data-fetching agent responsible for scraping electricity data from websites.
+
+-   **Technology**: A **Python** script using the **Selenium** and **Requests** libraries.
+-   **Role**: Its sole purpose is to acquire raw electricity data. It operates in a job-based manner, claiming a "slice" of dormitories to check from the worker.
+-   **Interaction**: It is triggered on-demand by the worker. Once activated, it claims a job, scrapes the necessary data, and submits the results back to the worker's ingest endpoint for processing and storage.
+
+This decoupled architecture ensures that each part of the system is specialized, scalable, and can be developed and maintained independently.
+
+## Source Code & Contributions
+
+The entire project is open-source. You can view the source code for each component on GitHub:
+
+-   [**Frontend Repository**](https://github.com/KeithCoreDumped/dormitricity-frontend)
+-   [**Worker Repository**](https://github.com/KeithCoreDumped/dormitricity-worker)
+-   [**Crawler Repository**](https://github.com/KeithCoreDumped/dormitricity-crawler)
+
+You can monitor the status of the data collection jobs on the [Crawler's GitHub Actions page](https://github.com/KeithCoreDumped/dormitricity-crawler/actions).
+
+We welcome any feedback or bug reports. Please feel free to [open an issue](https://github.com/KeithCoreDumped/dormitricity-frontend/issues) if you encounter any problems.

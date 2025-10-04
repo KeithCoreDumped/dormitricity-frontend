@@ -4,7 +4,8 @@
         "account": "Account",
         "docs": "Docs",
         "getting_started": "Getting Started",
-        "notification": "Notification"
+        "notification": "Notification",
+        "about": "About"
     },
     "topbar": {
         "toggle_nav": "Toggle navigation menu",

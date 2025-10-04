@@ -4,7 +4,8 @@
         "account": "账号管理",
         "docs": "文档",
         "getting_started": "快速开始",
-        "notification": "通知设置"
+        "notification": "通知设置",
+        "about": "关于"
     },
     "topbar": {
         "toggle_nav": "切换导航菜单",
