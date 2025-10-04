@@ -52,7 +52,7 @@ export function SeriesChart({ data, label, unit, stroke }: SeriesChartProps) {
                     data={formattedData}
                     margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
                 >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={true} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={true} />
                     <XAxis
                         dataKey="ts"
                         type="number"
