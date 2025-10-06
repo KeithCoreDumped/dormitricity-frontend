@@ -5,6 +5,11 @@ export function getToken(): string | null {
   return localStorage.getItem('token');
 }
 
+export function isAuthenticated(): boolean {
+  const token = getToken();
+  return !!token;
+}
+
 export function setToken(token: string): void {
   localStorage.setItem('token', token);
 }

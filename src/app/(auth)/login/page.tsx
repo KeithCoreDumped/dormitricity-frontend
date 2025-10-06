@@ -45,7 +45,7 @@ export default function LoginPage() {
     try {
       const data = await apiClient.post("/auth/login", values);
       setToken(data.token);
-      router.push("/");
+      router.push("/dashboard");
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);

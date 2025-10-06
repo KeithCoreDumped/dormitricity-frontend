@@ -1,4 +1,34 @@
 {
+    "app_name": "寮の電力アシスタント",
+    "home": {
+        "title": "寮の電力消費を監視",
+        "subtitle": "寮の電力使用状況を可視化、追跡、通知。",
+        "get_started": "始める",
+        "learn_more": "詳細を見る",
+        "features": {
+            "title": "なぜDormitricityを使うのか？",
+            "monitoring": {
+                "title": "リアルタイム監視",
+                "description": "10分ごとに更新される電力データで使用状況を把握。"
+            },
+            "notifications": {
+                "title": "スマート通知",
+                "description": "電力が少なくなった時、お好みのチャンネルで通知。"
+            },
+            "prediction": {
+                "title": "使用予測",
+                "description": "消費パターンに基づいて、充電が必要な時期を予測。"
+            }
+        },
+        "docs": {
+            "title": "ドキュメント",
+            "description": "包括的なガイドでDormitricityを最大限に活用。",
+            "browse": "ドキュメントを閲覧"
+        }
+    },
+    "dashboard": {
+        "title": "マイ購読"
+    },
     "sidebar": {
         "dashboard": "ダッシュボード",
         "account": "アカウント管理",

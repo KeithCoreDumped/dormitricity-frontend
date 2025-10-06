@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CollapsibleNav } from "@/components/layout/CollapsibleNav";
 import { useTranslation } from "react-i18next";
 import { navLinks } from "./links";
+import { AuthGate } from "./AuthGate";
 
 export function Sidebar() {
   const { t } = useTranslation();
@@ -27,7 +28,7 @@ export function Sidebar() {
         <div className="flex-1">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
             {links.map((link) => (
-                <CollapsibleNav key={link.label} link={link} />
+              <CollapsibleNav key={link.label} link={link} />
             ))}
           </nav>
         </div>

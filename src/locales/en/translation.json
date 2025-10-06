@@ -1,4 +1,34 @@
 {
+    "app_name": "Dormitricity",
+    "home": {
+        "title": "Monitor Your Dorm's Energy",
+        "subtitle": "Visualize, track, and get notified about your dormitory's electricity usage.",
+        "get_started": "Get Started",
+        "learn_more": "Learn More",
+        "features": {
+            "title": "Why Dormitricity?",
+            "monitoring": {
+                "title": "Real-time Monitoring",
+                "description": "Track your dorm's electricity consumption with 10-minute granularity."
+            },
+            "notifications": {
+                "title": "Smart Alerts",
+                "description": "Get notified via your preferred channel when electricity is running low."
+            },
+            "prediction": {
+                "title": "Usage Prediction",
+                "description": "Predict when you'll need to recharge based on your consumption patterns."
+            }
+        },
+        "docs": {
+            "title": "Documentation",
+            "description": "Learn how to make the most of Dormitricity with our comprehensive guides.",
+            "browse": "Browse Documentation"
+        }
+    },
+    "dashboard": {
+        "title": "My Subscriptions"
+    },
     "sidebar": {
         "dashboard": "Dashboard",
         "account": "Account",

@@ -19,15 +19,16 @@ import Image from "next/image";
 import { CollapsibleNav } from "./CollapsibleNav";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { isAuthenticated } from "@/lib/auth";
 
-export function Topbar() {
+export function Topbar({ isAuthPage = false }: { isAuthPage?: boolean }) {
   const router = useRouter();
   const { t } = useTranslation();
   const links = navLinks(t);
 
   function logout() {
     removeToken();
-    router.push("/login");
+    router.push("/");
   }
 
   return (
@@ -66,21 +67,27 @@ export function Topbar() {
         {/* Add breadcrumbs here if needed */}
       </div>
       <LanguageSwitcher />
-      <DropdownMenu>
+      {!isAuthPage && (<DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full">
             <CircleUser className="h-5 w-5" />
             <span className="sr-only">{t('topbar.toggle_user_menu')}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>{t('topbar.my_account')}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => router.push('/account')}>{t('topbar.settings')}</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logout}>{t('topbar.logout')}</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        {(
+          isAuthenticated() ?
+            (<DropdownMenuContent align="end">
+              <DropdownMenuLabel>{t('topbar.my_account')}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push('/account')}>{t('topbar.settings')}</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout}>{t('topbar.logout')}</DropdownMenuItem>
+            </DropdownMenuContent>)
+            : (<DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={logout}>{t('login.login_button')}</DropdownMenuItem>
+            </DropdownMenuContent>)
+        )}
+      </DropdownMenu>)}
     </header>
   );
 }

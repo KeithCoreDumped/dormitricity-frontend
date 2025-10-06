@@ -1,27 +1,27 @@
 'use client';
 
 import { ReactNode, useEffect, useState } from "react";
-import { getToken } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+// import { getToken } from "@/lib/auth";
+// import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const router = useRouter();
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push("/login");
-    } else {
-      setIsLoggedIn(true);
-    }
-  }, [router]);
+  // useEffect(() => {
+  //   const token = getToken();
+  //   if (!token) {
+  //     router.push("/login");
+  //   } else {
+  //     setIsLoggedIn(true);
+  //   }
+  // }, [router]);
 
-  if (!isLoggedIn) {
-    return null; // or a loading spinner
-  }
+  // if (!isLoggedIn) {
+  //   return null; // or a loading spinner
+  // }
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">

@@ -8,8 +8,18 @@ import { AddSubCard } from "@/components/subs/AddSubCard";
 import { SubsListSkeleton } from "@/components/subs/SubsListSkeleton";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
+import { isAuthenticated } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/login');
+    }
+  }, []);
+
   const { t } = useTranslation();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);

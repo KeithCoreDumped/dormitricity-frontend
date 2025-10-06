@@ -53,7 +53,7 @@ export default function RegisterPage() {
         password: values.password,
       });
       setToken(data.token);
-      router.push("/");
+      router.push("/dashboard");
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
