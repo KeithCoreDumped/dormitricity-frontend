@@ -2,33 +2,59 @@
 
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { LineChart, Zap, Bell } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated } from '@/lib/auth';
+import { SubsCard } from "@/components/subs/SubsCard";
+import { AddSubCard } from '@/components/subs/AddSubCard';
+import { Subscription } from '@/lib/types';
+import { SeriesChart } from '@/components/charts/SeriesChart';
+import { testData, testSubs } from '@/lib/testData';
 
 export default function HomePage() {
   const { t } = useTranslation();
   const router = useRouter();
 
+  const gridStagger = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.15,
+      },
+    },
+  };
+
+  // 子元素卡片的入场动效
+  const cardVariants = {
+    hidden: { opacity: 0, y: 24, filter: 'blur(6px)' },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    },
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="container px-4 mx-auto text-center"
         >
-          <Image 
-            src="/dormitricity-logo.svg" 
-            alt="Dormitricity Logo" 
-            width={120} 
-            height={120} 
+          <Image
+            src="/dormitricity-logo.svg"
+            alt="Dormitricity Logo"
+            width={120}
+            height={120}
             className="mx-auto mb-8"
           />
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
@@ -80,7 +106,7 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -99,7 +125,7 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -121,6 +147,34 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Example Subscription Card Section */}
+      <section className="py-20 bg-white dark:bg-gray-900">
+        <motion.div
+          variants={gridStagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}  // 出现在视口 25% 就开始
+          className="container px-4 mx-auto grid gap-4 md:grid-cols-2 lg:grid-cols-3 pointer-events-none"
+        >
+          <motion.div variants={cardVariants as unknown as Variants}>
+            <SubsCard sub={testSubs[0] as Subscription} onChanged={() => null} onSubDeleted={() => null} />
+          </motion.div>
+          <motion.div variants={cardVariants as unknown as Variants}>
+            <SubsCard sub={testSubs[1] as Subscription} onChanged={() => null} onSubDeleted={() => null} />
+          </motion.div>
+          <motion.div variants={cardVariants as unknown as Variants}>
+            <AddSubCard onSubAdded={() => null} />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      <SeriesChart
+        data={testData.points.slice(0, 500).map(({ ts, kwh }) => ({ ts, pt: kwh }))}
+        label={t('series.power_label')}
+        unit="kW"
+        stroke="var(--color-kw)"
+      />
 
       {/* Docs Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-800">
