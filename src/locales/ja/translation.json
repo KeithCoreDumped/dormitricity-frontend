@@ -88,7 +88,8 @@
         "login_button": "ログイン",
         "logging_in_button": "ログイン中...",
         "no_account": "アカウントをお持ちではありませんか？",
-        "signup_link": "サインアップ"
+        "signup_link": "サインアップ",
+        "session_expired": "ログインセッションの有効期限が切れました。もう一度サインインしてください。"
     },
     "register": {
         "title": "サインアップ",

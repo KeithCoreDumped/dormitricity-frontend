@@ -15,10 +15,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { apiClient } from "@/lib/apiClient";
 import { setToken } from "@/lib/auth";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useTranslation } from "react-i18next";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -28,8 +29,21 @@ const formSchema = z.object({
 export default function LoginPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const helperReason = searchParams.get("reason");
+  const helperMessage = useMemo(() => {
+    if (helperReason === "session-expired") {
+      return t("login.session_expired");
+    }
+    return null;
+  }, [helperReason, t]);
+  const nextParam = searchParams.get("next");
+  const safeNext =
+    nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
+      ? nextParam
+      : "/dashboard";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,7 +59,7 @@ export default function LoginPage() {
     try {
       const data = await apiClient.post("/auth/login", values);
       setToken(data.token);
-      router.push("/dashboard");
+      router.push(safeNext);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -67,6 +81,11 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {helperMessage && (
+            <Alert className="mb-4" variant="default">
+              <AlertDescription>{helperMessage}</AlertDescription>
+            </Alert>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
               <FormField

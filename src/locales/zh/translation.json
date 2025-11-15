@@ -88,7 +88,8 @@
         "login_button": "登录",
         "logging_in_button": "登录中...",
         "no_account": "没有账户？",
-        "signup_link": "注册"
+        "signup_link": "注册",
+        "session_expired": "登录状态已过期，请重新登录以继续访问。"
     },
     "register": {
         "title": "注册",

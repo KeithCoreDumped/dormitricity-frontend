@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { motion, Variants } from 'framer-motion';
@@ -11,14 +12,15 @@ import { useRouter } from 'next/navigation';
 import { isAuthenticated } from '@/lib/auth';
 import { SubsCard } from "@/components/subs/SubsCard";
 import { AddSubCard } from '@/components/subs/AddSubCard';
-import { Subscription } from '@/lib/types';
-import { testData, testSubs } from '@/lib/testData';
-import { EnergyPowerChart } from '@/components/charts/EnergyPowerChart';
+import { SeriesChart } from '@/components/charts/SeriesChart';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { buildDemoHistory, buildDemoSubscriptions } from '@/lib/demoSamples';
 
 export default function HomePage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const demoSubs = useMemo(() => buildDemoSubscriptions(), []);
+  const demoHistory = useMemo(() => buildDemoHistory(), []);
 
   const gridStagger = {
     hidden: {},
@@ -262,10 +264,10 @@ export default function HomePage() {
             className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pointer-events-none"
           >
             <motion.div variants={cardVariants as unknown as Variants}>
-              <SubsCard sub={testSubs[0] as Subscription} onChanged={() => null} onSubDeleted={() => null} />
+              <SubsCard sub={demoSubs[0]!} onChanged={() => null} onSubDeleted={() => null} />
             </motion.div>
             <motion.div variants={cardVariants as unknown as Variants}>
-              <SubsCard sub={testSubs[1] as Subscription} onChanged={() => null} onSubDeleted={() => null} />
+              <SubsCard sub={demoSubs[1]!} onChanged={() => null} onSubDeleted={() => null} />
             </motion.div>
             <motion.div variants={cardVariants as unknown as Variants}>
               <AddSubCard onSubAdded={() => null} />
@@ -297,9 +299,7 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="max-w-5xl mx-auto"
           >
-            <EnergyPowerChart
-              history={testData.points.slice(0, 500).map(({ ts, kwh }) => ({ ts, pt: kwh }))}
-            />
+            <SeriesChart variant="dual" history={demoHistory} />
           </motion.div>
         </div>
       </section>

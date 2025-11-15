@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   motion,
   useScroll,
@@ -9,11 +9,10 @@ import {
 } from 'framer-motion';
 import { SubsCard } from '@/components/subs/SubsCard';
 import { AddSubCard } from '@/components/subs/AddSubCard';
-import { Subscription } from '@/lib/types';
-import { testSubs, testData } from '@/lib/testData';
 import { NotifySetting } from '@/components/subs/NotifySetting';
 import { useTranslation } from 'react-i18next';
 import { SeriesChart } from '@/components/charts/SeriesChart';
+import { buildDemoHistory, buildDemoSubscriptions } from '@/lib/demoSamples';
 import "./styles.css";
 
 const cardVariants: Variants = {
@@ -86,16 +85,18 @@ function HeroSection() {
 
 export default function ParallaxPage() {
   const { t } = useTranslation();
+  const demoSubs = useMemo(() => buildDemoSubscriptions(), []);
+  const demoHistory = useMemo(() => buildDemoHistory(), []);
   return (
     <>
       <HeroSection />
       <ParallaxWrapper header="这是一个标题">
         <motion.div className="container px-4 mx-auto grid gap-4 md:grid-cols-2 lg:grid-cols-3 pointer-events-none">
           <motion.div variants={cardVariants} initial="hidden" animate="visible">
-            <SubsCard sub={testSubs[0] as Subscription} onChanged={() => null} onSubDeleted={() => null} />
+            <SubsCard sub={demoSubs[0]!} onChanged={() => null} onSubDeleted={() => null} />
           </motion.div>
           <motion.div variants={cardVariants} initial="hidden" animate="visible">
-            <SubsCard sub={testSubs[1] as Subscription} onChanged={() => null} onSubDeleted={() => null} />
+            <SubsCard sub={demoSubs[1]!} onChanged={() => null} onSubDeleted={() => null} />
           </motion.div>
           <motion.div variants={cardVariants} initial="hidden" animate="visible">
             <AddSubCard onSubAdded={() => null} />
@@ -109,12 +110,12 @@ export default function ParallaxPage() {
       ))} */}
       <ParallaxWrapper header={<span>sdfsdfsfd</span>}>
         <div className="w-[40vw] h-[80vh] bg-white p-4 rounded-lg shadow-md font-base justify-center flex items-center">
-          <NotifySetting sub={testSubs[0] as Subscription} onSubDeleted={() => null} onSuccess={() => null} />
+          <NotifySetting sub={demoSubs[0]!} onSubDeleted={() => null} onSuccess={() => null} />
         </div>
       </ParallaxWrapper>
       <ParallaxWrapper header="这是一个标题">
         <SeriesChart
-          data={testData.points.slice(0, 500).map(({ ts, kwh }) => ({ ts, pt: kwh }))}
+          data={demoHistory.slice(0, 500)}
           label={t('series.power_label')}
           unit="kW"
           stroke="var(--color-kw)"

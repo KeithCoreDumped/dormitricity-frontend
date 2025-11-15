@@ -92,7 +92,8 @@
         "login_button": "Login",
         "logging_in_button": "Logging in...",
         "no_account": "Don't have an account?",
-        "signup_link": "Sign up"
+        "signup_link": "Sign up",
+        "session_expired": "Your session has expired. Please sign in again to continue."
     },
     "register": {
         "title": "Sign Up",
