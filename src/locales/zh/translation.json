@@ -24,6 +24,17 @@
             "title": "使用文档",
             "description": "阅读我们的详细指南，充分利用 Dormitricity 的所有功能。",
             "browse": "浏览文档"
+        },
+        "demo": {
+            "dashboard_title": "管理您的订阅",
+            "dashboard_description": "通过直观的卡片式界面同时监控最多3个宿舍。",
+            "chart_title": "可视化分析",
+            "chart_description": "通过交互式实时图表可视化您的用电趋势。"
+        },
+        "stats": {
+            "update_frequency": "10分钟更新",
+            "notification_channels": "3种提醒渠道",
+            "max_subscriptions": "最多3个宿舍"
         }
     },
     "dashboard": {

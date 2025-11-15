@@ -24,6 +24,17 @@
             "title": "Documentation",
             "description": "Learn how to make the most of Dormitricity with our comprehensive guides.",
             "browse": "Browse Documentation"
+        },
+        "demo": {
+            "dashboard_title": "Manage Your Subscriptions",
+            "dashboard_description": "Monitor up to 3 dormitories simultaneously with an intuitive card-based interface.",
+            "chart_title": "Visual Analytics",
+            "chart_description": "Visualize your power consumption trends with interactive, real-time charts."
+        },
+        "stats": {
+            "update_frequency": "10-min Updates",
+            "notification_channels": "3 Alert Channels",
+            "max_subscriptions": "Up to 3 Dorms"
         }
     },
     "dashboard": {

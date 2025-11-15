@@ -24,6 +24,17 @@
             "title": "ドキュメント",
             "description": "包括的なガイドでDormitricityを最大限に活用。",
             "browse": "ドキュメントを閲覧"
+        },
+        "demo": {
+            "dashboard_title": "サブスクリプション管理",
+            "dashboard_description": "直感的なカードベースのインターフェースで最大3つの寮を同時に監視。",
+            "chart_title": "ビジュアル分析",
+            "chart_description": "インタラクティブなリアルタイムチャートで電力消費トレンドを可視化。"
+        },
+        "stats": {
+            "update_frequency": "10分更新",
+            "notification_channels": "3つの通知チャネル",
+            "max_subscriptions": "最大3つの寮"
         }
     },
     "dashboard": {

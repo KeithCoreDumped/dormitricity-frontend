@@ -178,6 +178,7 @@ export function SubsCard({ sub, onSubDeleted, onChanged }: SubsCardProps) {
                                     time: sub.last_ts
                                         ? formatTime(sub.last_ts)
                                         : t("subs_card.never_updated"),
+                                    'interpolation': { 'escapeValue': false }
                                 })}
                             </CardDescription>
                         </div>
