@@ -12,8 +12,9 @@ import { isAuthenticated } from '@/lib/auth';
 import { SubsCard } from "@/components/subs/SubsCard";
 import { AddSubCard } from '@/components/subs/AddSubCard';
 import { Subscription } from '@/lib/types';
-import { SeriesChart } from '@/components/charts/SeriesChart';
 import { testData, testSubs } from '@/lib/testData';
+import { EnergyPowerChart } from '@/components/charts/EnergyPowerChart';
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -44,6 +45,9 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="absolute right-6 top-6 z-20">
+          <LanguageSwitcher />
+        </div>
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
@@ -293,11 +297,8 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="max-w-5xl mx-auto"
           >
-            <SeriesChart
-              data={testData.points.slice(0, 500).map(({ ts, kwh }) => ({ ts, pt: kwh }))}
-              label={t('series.power_label')}
-              unit="kW"
-              stroke="var(--color-kw)"
+            <EnergyPowerChart
+              history={testData.points.slice(0, 500).map(({ ts, kwh }) => ({ ts, pt: kwh }))}
             />
           </motion.div>
         </div>
