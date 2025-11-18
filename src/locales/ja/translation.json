@@ -1,7 +1,7 @@
 {
-    "app_name": "寮の電力アシスタント",
+    "app_name": "Dormitricity",
     "home": {
-        "title": "寮の電力消費を監視",
+        "title": "Dormitricity",
         "subtitle": "寮の電力使用状況を可視化、追跡、通知。",
         "get_started": "始める",
         "learn_more": "詳細を見る",
