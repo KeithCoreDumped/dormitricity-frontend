@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 // import { getToken } from "@/lib/auth";
 // import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";

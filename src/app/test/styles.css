@@ -1,9 +1,0 @@
-/* 布局基础 */
-body {
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-snap-type: y mandatory;
-}

@@ -18,7 +18,7 @@ export default function DashboardPage() {
     if (!isAuthenticated()) {
       router.push('/login');
     }
-  }, []);
+  }, [router]);
 
   const { t } = useTranslation();
   const [subs, setSubs] = useState<Subscription[]>([]);
@@ -71,7 +71,7 @@ export default function DashboardPage() {
         },
       }}
     >
-      {subs.map((sub, index) => (
+      {subs.map((sub) => (
         <motion.div key={sub.hashed_dir} variants={cardVariants}>
           <SubsCard 
             sub={sub} 

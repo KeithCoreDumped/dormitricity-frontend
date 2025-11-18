@@ -309,7 +309,7 @@ function DualTooltip({
 
 export function SeriesChart(props: SeriesChartProps) {
   if (props.variant === "dual") {
-    return <DualSeriesChart history={props.history} />;
+    return <DualSeriesChart history={props.history} variant="dual" />;
   }
   const { data, label, unit, stroke } = props;
   return (

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { CollapsibleNav } from "@/components/layout/CollapsibleNav";
 import { useTranslation } from "react-i18next";
 import { navLinks } from "./links";
-import { AuthGate } from "./AuthGate";
+// import { AuthGate } from "./AuthGate";
 
 export function Sidebar() {
   const { t } = useTranslation();
